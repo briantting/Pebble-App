@@ -93,16 +93,22 @@ void* read_temperature(void *p) {
         } 
       }
     }
+    /*while(newline_count != 2) {*/
+      /*//Read only one byte at a time and only execute block if a byte is received*/
+      /*if((bytes_read = read(fd, &local_temp[total_bytes], 1)) != 0) {*/
+        /*total_bytes += bytes_read; */
+        /*if(local_temp[total_bytes - 1] == '\n') {*/
+          /*newline_count ++;*/
+        /*} */
+      /*}*/
+    /*}*/
 
     pthread_mutex_lock(&lock); //protects buffer
 
-    /*strsep(&local_temp, "\n");*/
-    puts("local temp:");
-    puts(local_temp);
+    char* local_temp_ptr = local_temp;
+    strsep(&local_temp_ptr, "\n");
     bzero(temperature, TEMP_MSG_LENGTH);
     strcpy(temperature, local_temp);
-    puts("temperature:");
-    puts(temperature);
 
     pthread_mutex_unlock(&lock);
   }
