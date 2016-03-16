@@ -21,8 +21,8 @@
 	The CONSTANT def will allow the length to change and minimize space/time complexity
 	The lock prevents reading from the buffer while it is cleared and writing input
 */
-char temperature_buffer[TEMP_MSG_LENGTH];
-pthread_mutex_t temperature_lock = PTHREAD_MUTEX_INITIALIZER;
+extern char* temperature;
+extern pthread_mutex_t lock;
 
 /*******************************************************************************
 	FUNCTIONS
@@ -33,7 +33,7 @@ pthread_mutex_t temperature_lock = PTHREAD_MUTEX_INITIALIZER;
 */
 void clear_buffer() {
     for (int i = 0; i < TEMP_MSG_LENGTH; i++) {
-        temperature_buffer[i] = '\0';
+        temperature[i] = '\0';
     }    
 }
 
@@ -74,7 +74,7 @@ void* read_temperature(void *p) {
 
 	//Continously read and fill buffer
 	while(1) { //****update boolean to terminate when server is terminated
-		pthread_mutex_lock(&temperature_lock); //protects buffer
+		pthread_mutex_lock(&lock); //protects buffer
 		
 		clear_buffer(); 
 
@@ -85,15 +85,18 @@ void* read_temperature(void *p) {
 		//Do not exceed reading longer than the length of the msg
 		while(total_bytes != TEMP_MSG_LENGTH || newline_count != 2) {
 			//Read only one byte at a time and only execute block if a byte is received
-			if((bytes_read = read(fd, &temperature_buffer[total_bytes], 1)) != 0) {
+			if((bytes_read = read(fd, &temperature[total_bytes], 1)) != 0) {
 				total_bytes += bytes_read; 
-				if(temperature_buffer[total_bytes - 1] == '\n') {
+				if(temperature[total_bytes - 1] == '\n') {
 					newline_count += 1;
 				} 
 			}
 		}
-		printf("%s", temperature_buffer);	//for testing output
-		pthread_mutex_unlock(&temperature_lock);
+		printf("%s", temperature);	//for testing output
+		pthread_mutex_unlock(&lock);
+    puts("sleeping");
+    sleep(2);
+    puts("waking");
 
 	}
 }
@@ -102,13 +105,13 @@ void* read_temperature(void *p) {
 	MAIN MOTHERF$#@ER
 *******************************************************************************/
 
-int main()
-{	
-	pthread_t thread;
-	pthread_create(&thread, NULL, &read_temperature, NULL);
-	pthread_join(thread, NULL);
-	return 0;
-}
+/*int main()*/
+/*{	*/
+	/*pthread_t thread;*/
+	/*pthread_create(&thread, NULL, &read_temperature, NULL);*/
+	/*pthread_join(thread, NULL);*/
+	/*return 0;*/
+/*}*/
 
 
 
