@@ -21,6 +21,7 @@
 	The CONSTANT def will allow the length to change and minimize space/time complexity
 	The lock prevents reading from the buffer while it is cleared and writing input
 */
+char local_temp[TEMP_MSG_LENGTH];
 extern char* temperature;
 extern pthread_mutex_t lock;
 
@@ -74,7 +75,6 @@ void* read_temperature(void *p) {
 
 	//Continously read and fill buffer
 	while(1) { //****update boolean to terminate when server is terminated
-		pthread_mutex_lock(&lock); //protects buffer
 		
 		clear_buffer(); 
 
@@ -85,21 +85,21 @@ void* read_temperature(void *p) {
 		//Do not exceed reading longer than the length of the msg
 		while(total_bytes != TEMP_MSG_LENGTH || newline_count != 2) {
 			//Read only one byte at a time and only execute block if a byte is received
-			if((bytes_read = read(fd, &temperature[total_bytes], 1)) != 0) {
+			if((bytes_read = read(fd, &local_temp[total_bytes], 1)) != 0) {
 				total_bytes += bytes_read; 
-				if(temperature[total_bytes - 1] == '\n') {
+				if(local_temp[total_bytes - 1] == '\n') {
 					newline_count += 1;
 				} 
 			}
 		}
-		printf("%s", temperature);	//for testing output
+		pthread_mutex_lock(&lock); //protects buffer
+		strcpy(temperature, local_temp);
 		pthread_mutex_unlock(&lock);
-    puts("sleeping");
-    sleep(2);
-    puts("waking");
+	
 
 	}
 }
+
 
 /*******************************************************************************
 	MAIN MOTHERF$#@ER
