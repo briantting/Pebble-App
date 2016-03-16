@@ -118,7 +118,6 @@ void *start_server(void *argv_void)
 
         // 7. close: close the connection
         close(fd);
-        printf("Server closed connection\n");
       }
     }
   } // end while

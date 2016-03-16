@@ -29,15 +29,6 @@ extern pthread_mutex_t lock;
 *******************************************************************************/
 
 /*
-  Resets the read_temperature buffer to be entirely blank
-*/
-/*void clear_buffer() {*/
-    /*for (int i = 0; i < TEMP_MSG_LENGTH; i++) {*/
-        /*local_temp[i] = '\0';*/
-    /*}*/
-/*}*/
-
-/*
   Thread function that continously reads temperature output from
   Arduino hooked up to Mac and stores in global buffer
 */
@@ -63,46 +54,22 @@ void* read_temperature(void *p) {
   int bytes_read = 0;
   char newline_tester;
 
-  //Find the beginning of a new reading by getting fd to end of the line
-  /*while(newline_count != 2) {*/
-    /*if((bytes_read = read(fd, &newline_tester, 1)) != 0) {*/
-        /*if(newline_tester == '\n') {*/
-          /*newline_count += 1;*/
-        /*} */
-    /*}*/
-  /*}*/
-
   //Continously read and fill buffer
   char local_temp[TEMP_MSG_LENGTH];
   while(1) { //****update boolean to terminate when server is terminated
     
     //Reset counting variables
-    newline_count = 0;
+    /*newline_count = 0;*/
     total_bytes = 0;
 
     // clear local_temp buff
     bzero(local_temp, TEMP_MSG_LENGTH);
 
     //Do not exceed reading longer than the length of the msg
-    while(newline_count != 2) {
+    while(local_temp[total_bytes - 1] != '\n') {
       //Read only one byte at a time and only execute block if a byte is received
-      if((bytes_read = read(fd, &local_temp[total_bytes], 1)) != 0) {
-        total_bytes += bytes_read; 
-        if(local_temp[total_bytes - 1] == '\n') {
-          newline_count ++;
-        } 
-      }
+      total_bytes += read(fd, &local_temp[total_bytes], 1);
     }
-    /*while(newline_count != 2) {*/
-      /*//Read only one byte at a time and only execute block if a byte is received*/
-      /*if((bytes_read = read(fd, &local_temp[total_bytes], 1)) != 0) {*/
-        /*total_bytes += bytes_read; */
-        /*if(local_temp[total_bytes - 1] == '\n') {*/
-          /*newline_count ++;*/
-        /*} */
-      /*}*/
-    /*}*/
-
     pthread_mutex_lock(&lock); //protects buffer
 
     char* local_temp_ptr = local_temp;
@@ -113,19 +80,3 @@ void* read_temperature(void *p) {
     pthread_mutex_unlock(&lock);
   }
 }
-
-
-/*******************************************************************************
-  MAIN MOTHERF$#@ER
-*******************************************************************************/
-
-/*int main()*/
-/*{ */
-  /*pthread_t thread;*/
-  /*pthread_create(&thread, NULL, &read_temperature, NULL);*/
-  /*pthread_join(thread, NULL);*/
-  /*return 0;*/
-/*}*/
-
-
-

@@ -279,7 +279,7 @@ void SerialMonitorPrint (byte Temperature_H, int Decimal, bool IsPositive)
     Serial.print(".");
     Serial.print(Decimal, DEC);
     Serial.print(" degree C");
-    Serial.print("\n\n");
+    Serial.print("\n");
 }
     
 
