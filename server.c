@@ -51,8 +51,8 @@ int start_server(int PORT_NUMBER)
 
       // 3. listen: indicates that we want to listn to the port to which we bound; second arg is number of allowed connections
       if (listen(sock, 5) == -1) {
-	perror("Listen");
-	exit(1);
+        perror("Listen");
+        exit(1);
       }
           
       // once you get here, the server is set up and about to start listening
@@ -75,8 +75,6 @@ int start_server(int PORT_NUMBER)
       printf("Here comes the message:\n");
       printf("%s\n", request);
 
-
-      
       // this is the message that we'll send back
       /* it actually looks like this:
         {
@@ -84,7 +82,7 @@ int start_server(int PORT_NUMBER)
         }
       */
       // char *reply = "{\n\"name\": \"cit595\"\n}\n";
-      char reply [BUFF_SIZE] = "{\n\"name\": \"";
+      char reply[BUFF_SIZE] = "{\n\"name\": \"";
       strcat(reply, temperature);
       strcat(reply, "\"\n}\n");
       
