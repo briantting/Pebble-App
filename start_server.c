@@ -106,7 +106,7 @@ void *start_server(void *argv_void)
         char reply [BUFF_SIZE] = "{\n\"name\": \"";
         // trim newline char
         /*temperature = strsep(&temperature, "\n");*/
-        /*pthread_mutex_lock(&lock);*/
+        pthread_mutex_lock(&lock);
         strcat(reply, temperature);
         pthread_mutex_unlock(&lock);
 

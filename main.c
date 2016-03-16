@@ -41,14 +41,11 @@ int main(int argc, char *argv[])
   if ( pthread_create( &t1, NULL, start_server, argv) != 0  ) {
     return error(); 
   }
-  /*if ( pthread_create( &t2, NULL, read_temperature, NULL  ) != 0  ) {*/
-    /*return error(); */
-  /*} */
+  if ( pthread_create( &t2, NULL, read_temperature, NULL  ) != 0  ) {
+    return error(); 
+  } 
   if ( pthread_join( t1, NULL  ) != 0  ) { 
     return error(); 
   } 
-  /*if ( pthread_join( t2, NULL  ) != 0  ) { */
-    /*return error();*/
-  /*}*/
 }
 

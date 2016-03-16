@@ -2,8 +2,8 @@ CC = clang
 
 all: clean server
 
-server: server.c start_server.c read_temperature.c
-	$(CC) -o server server.c start_server.c read_temperature.c
+server: main.c start_server.c read_temperature.c
+	$(CC) -o server main.c start_server.c read_temperature.c
 	./server $(SERVER)
 
 temp:
