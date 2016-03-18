@@ -54,11 +54,11 @@ int start_server(int PORT_NUMBER)
         perror("Listen");
         exit(1);
       }
-          
+
       // once you get here, the server is set up and about to start listening
       printf("\nServer configured to listen on port %d\n", PORT_NUMBER);
       fflush(stdout);
-     
+
 
       // 4. accept: wait here until we get a connection on that port
       int sin_size = sizeof(struct sockaddr_in);

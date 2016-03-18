@@ -10,5 +10,9 @@ temp:
 	$(CC) -o temperature read_temperature.c
 	./temperature
 
+heap: clean
+	$(CC) -g -o heap-tester heap-tester.c heap.c
+	valgrind --leak-check=full ./heap-tester
+
 clean: 
-	rm -rf server *.o
+	rm -rf server temperature heap-tester *.o

@@ -1,4 +1,2 @@
-server
-read_temperature
-serverold.c
-temperature
+heap-tester
+heap-tester.dSYM
