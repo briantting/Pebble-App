@@ -16,7 +16,7 @@ http://www.binarii.com/files/papers/c_sockets.txt
 #include <string.h>
 #define BUFF_SIZE 1000
 
-char* temperature = "100";
+char* temperature = "Hello, world";
 
 int start_server(int PORT_NUMBER)
 {
