@@ -73,8 +73,25 @@ void insert(heap_t* heap, void* value) {
   bubble_up(heap);
 }
 
-void bubble_down(heap_t* heap) {
+void bubble_down_ptr(heap_t* heap, void** ptr) {
+  int i = ptr - heap->array;
+  while (i * 2 < heap->array_size) {
 
+    void** left = ptr + i;
+    void** right = left + 1;
+
+    // left branch has lower priority than right
+    if (generalized_compare(heap, *left, *right) < 0) {
+      swap(ptr, right);
+      i = i * 2 + 1;
+    } else {
+      swap(ptr, left);
+      i = i * 2;
+    }
+  }
+}
+
+void bubble_down(heap_t* heap) {
   int i = 1;
   while (i * 2 < heap->array_size) {
 

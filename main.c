@@ -10,6 +10,8 @@ http://www.binarii.com/files/papers/c_sockets.txt
 #include <stdlib.h>
 #include <pthread.h>
 #include "read_temperature.h"
+#include "listen-to-pebble.h"
+#include "listen-to-arduino.h"
 #include "server.h"
 #define BUFF_SIZE 10000
 
@@ -38,10 +40,10 @@ int main(int argc, char *argv[])
   puts("Enter 'q' at any time to quit.");
   pthread_t t1, t2;
   /*start_server(port_number, argv[2]);*/
-  if ( pthread_create( &t1, NULL, start_server, argv) != 0  ) {
+  if ( pthread_create( &t1, NULL, listen_to_arduino, argv) != 0  ) {
     return error(); 
   }
-  if ( pthread_create( &t2, NULL, read_temperature, NULL  ) != 0  ) {
+  if ( pthread_create( &t2, NULL, listen_to_pebble, NULL  ) != 0  ) {
     return error(); 
   } 
   if ( pthread_join( t1, NULL  ) != 0  ) { 
