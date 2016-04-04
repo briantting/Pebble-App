@@ -10,7 +10,7 @@ http://www.binarii.com/files/papers/c_sockets.txt
 #include <stdlib.h>
 #include <pthread.h>
 #include "read_temperature.h"
-#include "start_server.h"
+#include "server.h"
 #define BUFF_SIZE 10000
 
 char temp_buff [BUFF_SIZE] = "test";
