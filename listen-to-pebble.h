@@ -1,6 +1,6 @@
-#include "read_temperature.h"
-void* to_pebble(void* argv) {
-  while(1) {
-    char* 
-  }
-}
+#ifndef LISTEN_TO_PEBBLE
+#define LISTEN_TO_PEBBLE 
+
+void* listen_to_pebble(void* argv);
+
+#endif

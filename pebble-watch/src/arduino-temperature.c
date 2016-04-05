@@ -1,7 +1,7 @@
 #include <pebble.h>
 static Window *window, *temp_window;
 static TextLayer *main_text_layer, *msg_received_text_layer;
-static char msg[100];
+static char msg[200];
 AppTimer *app_timer;
 
 void clear_recevied_message(void *data) {
@@ -133,8 +133,8 @@ static void init(void) {
   app_message_register_inbox_dropped(in_dropped_handler);
   app_message_register_outbox_sent(out_sent_handler);
   app_message_register_outbox_failed(out_failed_handler);
-  const uint32_t inbound_size = 100;
-  const uint32_t outbound_size = 100;
+  const uint32_t inbound_size = 200;
+  const uint32_t outbound_size = 200;
   app_message_open(inbound_size, outbound_size);
 
     // need this for adding the listener

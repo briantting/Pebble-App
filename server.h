@@ -1,1 +1,1 @@
-void *start_server(void*);
+int start_server(void*);
