@@ -178,8 +178,25 @@ void Dis_7SEG (int Decimal, byte High, byte Low, bool sign, bool IsCelsius)
 {
   if (!IsCelsius)
   {
-    High = High * 1.8 + 32;
-    Low = Low * 1.8;
+    double Temp = (High + Decimal/10000.0) * 1.8;
+    if (sign == 0)
+    {
+      Temp = -Temp + 32;
+      if (Temp > 0)
+      {
+        sign = 1;
+      }
+      else
+      {
+        Temp = -Temp;
+      }
+    }
+    else
+    {
+      Temp = Temp + 32;
+    }
+    High = floor(Temp);
+    Decimal = (Temp - High) * 10000;
   }
   
   byte Digit = 4;                 /* Number of 7-Segment digit */
