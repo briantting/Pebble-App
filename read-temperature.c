@@ -7,7 +7,6 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
-#include <pthread.h>
 #define TEMP_MSG_LENGTH 100
 
 
@@ -21,8 +20,7 @@
   The CONSTANT def will allow the length to change and minimize space/time complexity
   The lock prevents reading from the buffer while it is cleared and writing input
 */
-extern char* temperature;
-extern pthread_mutex_t lock;
+// extern pthread_mutex_t lock;
 
 /*******************************************************************************
   FUNCTIONS
@@ -32,7 +30,7 @@ extern pthread_mutex_t lock;
   Thread function that continously reads temperature output from
   Arduino hooked up to Mac and stores in global buffer
 */
-void* read_temperature(void *p) {
+void read_temperature(char *temp_buff) {
 
   //Specific to macs and our team's arduino device
   int fd = open("/dev/cu.usbmodem1411", O_RDWR);
@@ -49,34 +47,34 @@ void* read_temperature(void *p) {
   cfsetospeed(&options, 9600); // set output baud rate
   tcsetattr(fd, TCSANOW, &options); // set options
 
-  int newline_count = 0;
+  // int newline_count = 0;
   int total_bytes = 0;
-  int bytes_read = 0;
-  char newline_tester;
+  // int bytes_read = 0;
+  // char newline_tester;
 
   //Continously read and fill buffer
-  char local_temp[TEMP_MSG_LENGTH];
-  while(1) { //****update boolean to terminate when server is terminated
+  // char local_temp[TEMP_MSG_LENGTH];
+  // while(1) { //****update boolean to terminate when server is terminated
     
     //Reset counting variables
     /*newline_count = 0;*/
     total_bytes = 0;
 
     // clear local_temp buff
-    bzero(local_temp, TEMP_MSG_LENGTH);
+    bzero(temp_buff, TEMP_MSG_LENGTH);
 
     //Do not exceed reading longer than the length of the msg
-    while(local_temp[total_bytes - 1] != '\n') {
+    while(temp_buff[total_bytes - 1] != '\n') {
       //Read only one byte at a time and only execute block if a byte is received
-      total_bytes += read(fd, &local_temp[total_bytes], 1);
+      total_bytes += read(fd, &temp_buff[total_bytes], 1);
     }
-    pthread_mutex_lock(&lock); //protects buffer
+    // pthread_mutex_lock(&lock); //protects buffer
 
-    char* local_temp_ptr = local_temp;
-    strsep(&local_temp_ptr, "\n");
-    bzero(temperature, TEMP_MSG_LENGTH);
-    strcpy(temperature, local_temp);
+    // char* local_temp_ptr = local_temp;
+    // strsep(&local_temp_ptr, "\n");
+    // bzero(temperature, TEMP_MSG_LENGTH);
+    // strcpy(temperature, local_temp);
 
-    pthread_mutex_unlock(&lock);
-  }
+    // pthread_mutex_unlock(&lock);
+  // }
 }
