@@ -77,4 +77,6 @@ void read_temperature(char *temp_buff) {
 
     // pthread_mutex_unlock(&lock);
   // }
+
+    close(fd);
 }
