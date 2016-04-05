@@ -323,7 +323,7 @@ void SerialMonitorPrint (byte Temperature_H, int Decimal, bool IsPositive)
 bool SerialMonitorRead ()
 {
     if (Serial.available() > 0) {
-      if (Serial.read() == 1) {
+      if (Serial.read() == '1') {
         return true;
       }
     }
