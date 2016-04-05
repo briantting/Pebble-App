@@ -3,6 +3,7 @@
 
 const int pingPin = 11;
 unsigned int duration, inches;
+int blue = 1;
 
 void setup() {
   Serial.begin(9600);
@@ -11,8 +12,13 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(RED, LOW);
-  digitalWrite(BLUE, LOW);
+  if (blue == 1) {
+    digitalWrite(BLUE, HIGH);
+    digitalWrite(RED, LOW);
+  } else {
+    digitalWrite(RED, HIGH);
+    digitalWrite(BLUE, LOW);
+  }
   
   pinMode(pingPin, OUTPUT);          // Set pin to OUTPUT
   digitalWrite(pingPin, LOW);        // Ensure pin is low
@@ -24,9 +30,9 @@ void loop() {
   duration = pulseIn(pingPin, HIGH); // Read echo pulse
   inches = duration / 74 / 2;        // Convert to inches
   if (inches > 3) {
-    digitalWrite(RED, HIGH);
+    blue = 0;
   } else {
-    digitalWrite(BLUE, HIGH);
+    blue = 1;
   }
   Serial.println(inches);            // Display result
   delay(200);                 // Short delay
