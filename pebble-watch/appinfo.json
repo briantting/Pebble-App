@@ -1,0 +1,27 @@
+{
+  "appKeys": {
+    "hello_msg": 0
+  },
+  "capabilities": [
+    ""
+  ],
+  "companyName": "CIT595-Group-8",
+  "longName": "arduino-temperature",
+  "projectType": "native",
+  "resources": {
+    "media": []
+  },
+  "sdkVersion": "2",
+  "shortName": "arduino-temperature",
+  "targetPlatforms": [
+    "aplite",
+    "basalt",
+    "chalk"
+  ],
+  "uuid": "d30308f0-9fd1-42d6-90a0-1e05721edff4",
+  "versionCode": "1",
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": false
+  }
+}
