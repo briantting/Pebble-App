@@ -21,7 +21,6 @@
   The CONSTANT def will allow the length to change and minimize space/time complexity
   The lock prevents reading from the buffer while it is cleared and writing input
 */
-extern char* temperature;
 extern pthread_mutex_t lock;
 
 /*******************************************************************************
