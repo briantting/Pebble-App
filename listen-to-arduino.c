@@ -54,10 +54,30 @@ void* listen_to_arduino(void* argv) {
   int num = 0; // for computing average
   char temp_buff [BUFF_SIZE]; // holds strings read from Arduino
   while(1) {
+
+    // check if user input 'q' to quit
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(0, &set);
+    FD_SET(fd, &set);
+    if(select(fd + 1, &set, NULL, NULL, NULL) == -1) {
+        perror("select");
+        exit(1);
+    }
+    if (FD_ISSET(0, &set)) { 
+      char buff [BUFF_SIZE]; 
+      fgets(buff, sizeof(buff), stdin); 
+      if (strcmp(buff, "q\n") == 0) {
+        break; 
+      }
+    }
+
+    // pull data from Arduino and enqueue
     read_temperature(fd, temp_buff); // save string from Ardunito to temp_buff
     float temp = atof(temp_buff);
     enqueue(q, temp);
 
+    // update min, max, and average
     num++;
     pthread_mutex_lock(&lock);
     get_extrema(q, &min, &max); // get min and max values in queue
@@ -68,4 +88,5 @@ void* listen_to_arduino(void* argv) {
   }
   close(fd);
   delete_queue(q);
+  return NULL;
 }
