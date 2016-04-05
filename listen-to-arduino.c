@@ -32,7 +32,7 @@ void read_temperature(int fd, char *temp_buff) {
 
 void* listen_to_arduino(void* argv) {
 
-  /* configure connection to Arduino */
+  // configure connection to Arduino
 
   //Specific to macs and our team's arduino device
   int fd = open("/dev/cu.usbmodem1411", O_RDWR);
