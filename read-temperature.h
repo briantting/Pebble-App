@@ -1,2 +1,2 @@
 
-void* read_temperature(void*);
+void read_temperature(char *temp_buff);

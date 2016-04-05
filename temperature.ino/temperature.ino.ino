@@ -71,6 +71,8 @@ void loop()
   int Decimal;
   byte Temperature_H, Temperature_L, counter, counter2;
   bool IsPositive;
+  bool IsCelsius = true;
+  bool SwitchUnits;
   
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
      and Digits 1, 2, 3 AND 4 are NOT blanked */
@@ -113,6 +115,12 @@ void loop()
   
   while (1)
   {
+    SwitchUnits = SerialMonitorRead ();
+    if (SwitchUnits)
+    {
+      IsCelsius = !IsCelsius;  
+    }
+    
     Wire.requestFrom(THERM, 2);
     Temperature_H = Wire.read();
     Temperature_L = Wire.read();
@@ -128,7 +136,7 @@ void loop()
     UpdateRGB (Temperature_H);
     
     /* Display temperature on the 7-Segment */
-    Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive);
+    Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
     
     delay (1000);        /* Take temperature read every 1 second */
   }
@@ -146,7 +154,7 @@ void Cal_temp (int& Decimal, byte& High, byte& Low, bool& sign)
     sign = 0;
   else
     sign = 1;
-    
+  
   High = High & B01111111;      /* Remove sign bit */
   Low = Low & B11110000;        /* Remove last 4 bits */
   Low = Low >> 4; 
@@ -166,8 +174,31 @@ void Cal_temp (int& Decimal, byte& High, byte& Low, bool& sign)
  Purpose: 
    Display number on the 7-segment display.
 ****************************************************************************/
-void Dis_7SEG (int Decimal, byte High, byte Low, bool sign)
+void Dis_7SEG (int Decimal, byte High, byte Low, bool sign, bool IsCelsius)
 {
+  if (!IsCelsius)
+  {
+    double Temp = (High + Decimal/10000.0) * 1.8;
+    if (sign == 0)
+    {
+      Temp = -Temp + 32;
+      if (Temp > 0)
+      {
+        sign = 1;
+      }
+      else
+      {
+        Temp = -Temp;
+      }
+    }
+    else
+    {
+      Temp = Temp + 32;
+    }
+    High = floor(Temp);
+    Decimal = (Temp - High) * 10000;
+  }
+  
   byte Digit = 4;                 /* Number of 7-Segment digit */
   byte Number;                    /* Temporary variable hold the number to display */
   
@@ -211,7 +242,14 @@ void Dis_7SEG (int Decimal, byte High, byte Low, bool sign)
 
   if (Digit > 0)                 /* Display "c" if there is more space on 7-SEG */
   {
-    Send7SEG (Digit,0x58);
+    if (IsCelsius)
+    {
+      Send7SEG (Digit,0x58);
+    }
+    else
+    {
+      Send7SEG (Digit,0x71);  
+    }
     Digit--;
   }
   
@@ -281,6 +319,14 @@ void SerialMonitorPrint (byte Temperature_H, int Decimal, bool IsPositive)
     Serial.print(" degree C");
     Serial.print("\n");
 }
-    
 
+bool SerialMonitorRead ()
+{
+    if (Serial.available() > 0) {
+      if (Serial.read() == '1') {
+        return true;
+      }
+    }
+    return false;
+}
 
