@@ -75,7 +75,8 @@ void* listen_to_arduino(void* _) {
     }
 
     // pull data from Arduino and enqueue
-    read_temperature(arduino, temp_buff); // save string from Ardunito to temp_buff
+    // save string from Ardunito to temp_buff
+    read_temperature(arduino, temp_buff); 
     float temp = atof(temp_buff);
     enqueue(q, temp);
 
