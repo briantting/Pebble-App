@@ -31,7 +31,7 @@ void read_temperature(int arduino, char *temp_buff) {
   }
 }
 
-void* listen_to_arduino(void* argv) {
+void* listen_to_arduino(void* _) {
 
   // configure connection to Arduino
 

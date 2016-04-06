@@ -1,10 +1,8 @@
 CC = clang
 
-all: clean server
-
-server: 
-	$(CC) -o server main.c listen-to-arduino.c listen-to-pebble.c queue.c
-	./server $(SERVER)
+all: clean
+	$(CC) -g -o server main.c listen-to-arduino.c listen-to-pebble.c queue.c
+	valgrind ./server $(SERVER)
 
 temp:
 	$(CC) -o temperature read-temperature.c
