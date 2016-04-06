@@ -103,6 +103,7 @@ void* listen_to_pebble(void* argv) {
       char buff [MSG_SIZE]; 
       fgets(buff, sizeof(buff), stdin); 
       if (strcmp(buff, "q\n") == 0) {
+        puts("message received.");
         break; 
       }
     } else {

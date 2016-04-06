@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   if (pthread_create(&t2, NULL, listen_to_pebble, argv) != 0) {
     return error(); 
   } 
-  if (pthread_join(t1, NULL) != 0) { 
+  if (pthread_join(t2, NULL) != 0) { 
     return error(); 
   } 
 }

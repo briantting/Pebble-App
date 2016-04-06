@@ -31,8 +31,6 @@ void read_temperature(int arduino, char *temp_buff) {
     //Read only one byte at a time and only execute block if a byte is received
     total_bytes += read(arduino, &temp_buff[total_bytes], 1);
   }
-  strcat(test, temp_buff);
-  puts(test);
 }
 
 void* listen_to_arduino(void* _) {
@@ -62,21 +60,21 @@ void* listen_to_arduino(void* _) {
   while(1) {
 
     // check if user input 'q' to quit
-    fd_set set;
-    FD_ZERO(&set);
-    FD_SET(0, &set);
-    FD_SET(arduino, &set);
-    if(select(arduino + 1, &set, NULL, NULL, NULL) == -1) {
-        perror("select");
-        exit(1);
-    }
-    if (FD_ISSET(0, &set)) { 
-      char buff [BUFF_SIZE]; 
-      fgets(buff, sizeof(buff), stdin); 
-      if (strcmp(buff, "q\n") == 0) {
-        break; 
-      }
-    }
+    /*fd_set set;*/
+    /*FD_ZERO(&set);*/
+    /*FD_SET(0, &set);*/
+    /*FD_SET(arduino, &set);*/
+    /*if(select(arduino + 1, &set, NULL, NULL, NULL) == -1) {*/
+        /*perror("select");*/
+        /*exit(1);*/
+    /*}*/
+    /*if (FD_ISSET(0, &set)) { */
+      /*char buff [BUFF_SIZE]; */
+      /*fgets(buff, sizeof(buff), stdin); */
+      /*if (strcmp(buff, "q\n") == 0) {*/
+        /*break; */
+      /*}*/
+    /*}*/
 
     // pull data from Arduino and enqueue
     // save string from Ardunito to temp_buff
