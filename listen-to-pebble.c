@@ -209,4 +209,5 @@ void* listen_to_pebble(void* argv) {
   printf("Server shutting down\n");
 
   return 0;
+
 }
