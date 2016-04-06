@@ -12,3 +12,4 @@ server.c
 server.h
 listen-to-pebble.o
 *.DS_Store
+server.dSYM
