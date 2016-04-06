@@ -51,7 +51,7 @@ void get_extrema(queue_t* q,
                  float* max_ptr) {
   float min = FLT_MAX;
   float max = FLT_MIN;
-  for (int i = 0; i < q->num_elements; i++) {
+  for (int i = -q->num_elements; i < 0; i++) {
     float val = q->ptr[i];
     if (val > max) {
       max = val;
@@ -65,7 +65,7 @@ void get_extrema(queue_t* q,
 }
 
 void print_queue(queue_t* q) {
-  for (int i = 0; i < q->size; i++) {
+  for (int i = 0; i < q->num_elements; i++) {
     printf("[%d]: %f\n", i, q->array[i]);
   }
   printf("\n");

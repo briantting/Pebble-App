@@ -1,9 +1,6 @@
-#include <sys/types.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
@@ -38,7 +35,7 @@ void read_temperature(char *temp_buff) {
   //Exits thread if there was an issue
   if(fd == -1) {
     fprintf(stderr, "%s\n", "There was a problem accessing the Arduino.");
-    return NULL;  //May want to consider a non-NULL error type
+    exit(1);  //May want to consider a non-NULL error type
   }
   
   struct termios options; // struct to hold options
