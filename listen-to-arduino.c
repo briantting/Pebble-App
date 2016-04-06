@@ -16,6 +16,8 @@ extern float average, min, max;
 extern pthread_mutex_t lock;
 extern int arduino;
 
+char test [BUFF_SIZE]; 
+
 void read_temperature(int arduino, char *temp_buff) {
 
   // int newline_count = 0;
@@ -25,10 +27,12 @@ void read_temperature(int arduino, char *temp_buff) {
   bzero(temp_buff, TEMP_MSG_LENGTH);
 
   //Do not exceed reading longer than the length of the msg
-  while(temp_buff[total_bytes - 1] != '\n') {
+  while(!total_bytes || temp_buff[total_bytes - 1] != '\n') {
     //Read only one byte at a time and only execute block if a byte is received
     total_bytes += read(arduino, &temp_buff[total_bytes], 1);
   }
+  strcat(test, temp_buff);
+  puts(test);
 }
 
 void* listen_to_arduino(void* _) {
