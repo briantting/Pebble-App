@@ -67,27 +67,28 @@ void start_server(void *argv_void)
 }
 
 /*
-	Thread that starts a server and continously listens to Pebble Watch.
-	Able to handle Pebble-Arduino temperature commands. 
-	argv[1] should contain port to listen to. 
+  Thread that starts a server and continously listens to Pebble Watch.
+  Able to handle Pebble-Arduino temperature commands. 
+  argv[1] should contain port to listen to. 
 */
 void* listen_to_pebble(void* argv) {
-	bool isCelsius = true; //handles which mode the temperature is in. Default is Celsius
+  bool isCelsius = true; //handles which mode the temperature is in. Default is Celsius
   struct sockaddr_in server_addr,client_addr; 
   int fd = -1;
   fd_set set;
 
   /* 
-  	Initializes the server.
-  	Returns the location of the sock.
+    Initializes the server.
+    Returns the location of the sock.
   */
-	start_server(argv);
+  start_server(argv);
 
-	/*
-		Continously waits for Pebble message using select.
-		Also listens to STDIN for "q" command to quit.
-	*/
+  /*
+    Continously waits for Pebble message using select.
+    Also listens to STDIN for "q" command to quit.
+  */
   while(1) {
+
     FD_ZERO(&set);
     FD_SET(0, &set);
     FD_SET(sock, &set);
@@ -103,11 +104,10 @@ void* listen_to_pebble(void* argv) {
       char buff [MSG_SIZE]; 
       fgets(buff, sizeof(buff), stdin); 
       if (strcmp(buff, "q\n") == 0) {
-        puts("message received.");
         break; 
       }
     } else {
-    	int sin_size = sizeof(struct sockaddr_in);
+      int sin_size = sizeof(struct sockaddr_in);
       fd = accept(sock, (struct sockaddr *)&client_addr,(socklen_t *)&sin_size);
       if (fd != -1) {
         printf("Server got a connection from (%s, %d)\n",
@@ -128,24 +128,24 @@ void* listen_to_pebble(void* argv) {
 
         
         pthread_mutex_lock(&lock);
-		    float temp_max = max;
-		    float temp_avg = average;
-		    float temp_min = min;
-		    char *metric = "c ";
-      	pthread_mutex_unlock(&lock);
+        float temp_max = max;
+        float temp_avg = average;
+        float temp_min = min;
+        char *metric = "c ";
+        pthread_mutex_unlock(&lock);
 
-      	//Handle conversions if mode is in Farenheit
-		    if(!isCelsius) {
-		    	temp_max = temp_max * 1.8 + 32;
-		    	temp_min = temp_min * 1.8 + 32;
-		    	temp_avg = temp_avg * 1.8 + 32;
-		    	metric = "f ";
-		    }
+        //Handle conversions if mode is in Farenheit
+        if(!isCelsius) {
+          temp_max = temp_max * 1.8 + 32;
+          temp_min = temp_min * 1.8 + 32;
+          temp_avg = temp_avg * 1.8 + 32;
+          metric = "f ";
+        }
 
-		    /*
-		    	Creates a JSON reply for pebble.
-		    	There must be a default reply, otherwise Pebble will keep pinging.
-		    */
+        /*
+          Creates a JSON reply for pebble.
+          There must be a default reply, otherwise Pebble will keep pinging.
+        */
         char* begin_reply = "{\n\"name\": \"";
         char* end_reply = "\"\n }\n";
         bzero(reply, MSG_SIZE);
@@ -153,42 +153,42 @@ void* listen_to_pebble(void* argv) {
         strcat(reply, begin_reply);
 
         char *command = strdup(request);
-      	char *token = strsep(&command, " ");
-      	token = strsep(&command, " ");
+        char *token = strsep(&command, " ");
+        token = strsep(&command, " ");
 
         if(strlen(request) != 0) {
-      	 	if(strncmp(request, "GET", 3) == 0) {
-      	 		
-      	 		if(strcmp(token, "/high") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_max);
-      	 			strcat(reply, metric);
-      	 		} else if (strcmp(token, "/average") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_avg);
-      	 			strcat(reply, metric);
-      	 		} else if (strcmp(token, "/low") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_min);
-      	 			strcat(reply, metric);
-      	 		}
-      	 		 else {
-      	 			strcat(reply, "Invalid GET request");
-      	 		}
-      	 		
-      	 	} else if(strncmp(request, "POST", 3) == 0) {
-      	  	if(strcmp(token, "/change") == 0) {
-      	  		isCelsius = !isCelsius;
-      	  		write(arduino, "1", 1);
-      	 			strcat(reply, "Temp metric changed");
-      	 		} else {
-      	 			strcat(reply, "Invalid POST request");
-      	 		}
-      	  } 
-      	 	else {
-      	 		strcat(reply,"Only able to handle GET and POST requests");
-      	 	}
+          if(strncmp(request, "GET", 3) == 0) {
+            
+            if(strcmp(token, "/high") == 0) {
+              snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_max);
+              strcat(reply, metric);
+            } else if (strcmp(token, "/average") == 0) {
+              snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_avg);
+              strcat(reply, metric);
+            } else if (strcmp(token, "/low") == 0) {
+              snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_min);
+              strcat(reply, metric);
+            }
+             else {
+              strcat(reply, "Invalid GET request");
+            }
+            
+          } else if(strncmp(request, "POST", 3) == 0) {
+            if(strcmp(token, "/change") == 0) {
+              isCelsius = !isCelsius;
+              write(arduino, "1\0", 1);
+              strcat(reply, "Temp metric changed");
+            } else {
+              strcat(reply, "Invalid POST request");
+            }
+          } 
+          else {
+            strcat(reply,"Only able to handle GET and POST requests");
+          }
 
         } else {
-        	strcat(reply, "no message received from pebble");
-        	
+          strcat(reply, "no message received from pebble");
+          
         }
 
         strcat(reply, end_reply);
