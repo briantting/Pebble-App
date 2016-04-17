@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <pthread.h>
+#include <sys/socket.h>
 #define BUFF_SIZE 10000
 #define TEMP_MSG_LENGTH 100
 #define SECS_PER_HOUR 3600
@@ -15,6 +16,7 @@
 extern float average, min, max;
 extern pthread_mutex_t lock;
 extern int arduino;
+extern int sock;
 
 char test [BUFF_SIZE]; 
 
@@ -62,6 +64,7 @@ void* listen_to_arduino(void* _) {
     // save string from Ardunito to temp_buff
     read_message(arduino, temp_buff); 
     float temp;
+    char msg;
     switch (temp_buff[0]) {
       case 't':
         temp = atof(temp_buff + 3);
@@ -76,10 +79,10 @@ void* listen_to_arduino(void* _) {
             temp, min, max, average);
         pthread_mutex_unlock(&lock);
       case 'm':
-        switch (temp_buff[3]) {
-          case 'a':
-            return NULL;  // TODO
-        }
+        send(sock, temp_buff, 1, 0);
+      default:
+        perror("Read_message returned an unknown message.");
+        exit(1);
     }
   }
   close(arduino);
