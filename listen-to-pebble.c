@@ -112,21 +112,20 @@ void* listen_to_pebble(void* argv) {
       if (fd != -1) {
         printf("Server got a connection from (%s, %d)\n",
             inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
-            
+
         // buffer to read data into
         char request[MSG_SIZE];
 
         // 5. recv: read incoming message into buffer
         int bytes_received = recv(fd,request,1024,0);
-        
+
         // null-terminate the string
         request[bytes_received] = '\0';
-        
+
         printf("Here comes the message:\n");
         printf("%s\n", request);
 
 
-        
         pthread_mutex_lock(&lock);
         float temp_max = max;
         float temp_avg = average;
@@ -158,7 +157,7 @@ void* listen_to_pebble(void* argv) {
 
         if(strlen(request) != 0) {
           if(strncmp(request, "GET", 3) == 0) {
-            
+
             if(strcmp(token, "/high") == 0) {
               snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_max);
               strcat(reply, metric);

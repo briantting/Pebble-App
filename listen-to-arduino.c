@@ -18,7 +18,7 @@ extern int arduino;
 
 char test [BUFF_SIZE]; 
 
-void read_temperature(int arduino, char *temp_buff) {
+void read_message(int arduino, char *temp_buff) {
 
   // int newline_count = 0;
   int total_bytes = 0;
@@ -60,18 +60,27 @@ void* listen_to_arduino(void* _) {
   while(1) {
     // pull data from Arduino and enqueue
     // save string from Ardunito to temp_buff
-    read_temperature(arduino, temp_buff); 
-    float temp = atof(temp_buff);
-    enqueue(q, temp);
+    read_message(arduino, temp_buff); 
+    float temp;
+    switch (temp_buff[0]) {
+      case 't':
+        temp = atof(temp_buff + 3);
+        enqueue(q, temp);
 
-    // update min, max, and average
-    num++;
-    pthread_mutex_lock(&lock);
-    get_extrema(q, &min, &max); // get min and max values in queue
-    average = (average * (num - 1) + temp) / num; // update average
-    printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
-        temp, min, max, average);
-    pthread_mutex_unlock(&lock);
+        // update min, max, and average
+        num++;
+        pthread_mutex_lock(&lock);
+        get_extrema(q, &min, &max); // get min and max values in queue
+        average = (average * (num - 1) + temp) / num; // update average
+        printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
+            temp, min, max, average);
+        pthread_mutex_unlock(&lock);
+      case 'm':
+        switch (temp_buff[3]) {
+          case 'a':
+            return NULL;  // TODO
+        }
+    }
   }
   close(arduino);
   delete_queue(q);
