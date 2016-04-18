@@ -21,18 +21,18 @@ extern int received;
 
 char test [BUFF_SIZE]; 
 
-void read_message(int arduino, char *temp_buff) {
+void read_message(int arduino, char *buff) {
 
   // int newline_count = 0;
   int total_bytes = 0;
 
   // clear local_temp buff
-  bzero(temp_buff, TEMP_MSG_LENGTH);
+  bzero(buff, TEMP_MSG_LENGTH);
 
   //Do not exceed reading longer than the length of the msg
-  while(!total_bytes || temp_buff[total_bytes - 1] != '\n') {
+  while(!total_bytes || buff[total_bytes - 1] != '\n') {
     //Read only one byte at a time and only execute block if a byte is received
-    total_bytes += read(arduino, &temp_buff[total_bytes], 1);
+    total_bytes += read(arduino, &buff[total_bytes], 1);
   }
 }
 
@@ -58,17 +58,17 @@ void* listen_to_arduino(void* _) {
 
   queue_t* q = new_queue(SECS_PER_HOUR);
   int num = 0; // for computing average
-  char temp_buff [BUFF_SIZE]; // holds strings read from Arduino
+  char buff [BUFF_SIZE]; // holds strings read from Arduino
   tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
   while(1) {
     // pull data from Arduino and enqueue
-    // save string from Ardunito to temp_buff
-    read_message(arduino, temp_buff); 
+    // save string from Ardunito to buff
+    read_message(arduino, buff); 
     float temp;
     char msg;
-    switch (temp_buff[0]) {
-      case 't':
-        temp = atof(temp_buff + 3);
+    switch (buff[0]) {
+      case 't': // temp
+        temp = atof(buff + 3);
         enqueue(q, temp);
 
         // update min, max, and average
@@ -79,14 +79,24 @@ void* listen_to_arduino(void* _) {
         printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
             temp, min, max, average);
         pthread_mutex_unlock(&lock);
-      case 'a':
-        send(sock, temp_buff, 1, 0);
-      case 'r':
+      case 'a': 
+        switch (buff[3]) {
+        case 'a': // armed
+          send(sock, buff, 1, 0);
+        case 'd': // disarmed
+          send(sock, buff, 1, 0);
+        case 's': // sounded
+          send(sock, buff, 1, 0);
+        default:
+          perror(buff);
+          exit(1);
+      }
+      case 'r': // received message
         pthread_mutex_lock(&lock);
         received = 1;
         pthread_mutex_unlock(&lock);
       default:
-        perror("Read_message returned an unknown message.");
+        perror(buff);
         exit(1);
     }
   }
