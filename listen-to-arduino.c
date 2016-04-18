@@ -17,6 +17,7 @@ extern float average, min, max;
 extern pthread_mutex_t lock;
 extern int arduino;
 extern int sock;
+extern int received;
 
 char test [BUFF_SIZE]; 
 
@@ -78,8 +79,12 @@ void* listen_to_arduino(void* _) {
         printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
             temp, min, max, average);
         pthread_mutex_unlock(&lock);
-      case 'm':
+      case 'a':
         send(sock, temp_buff, 1, 0);
+      case 'r':
+        pthread_mutex_lock(&lock);
+        received = 1;
+        pthread_mutex_unlock(&lock);
       default:
         perror("Read_message returned an unknown message.");
         exit(1);

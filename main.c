@@ -15,6 +15,7 @@ float average = 0;
 float min, max;
 int arduino;
 int sock;
+int received;
 
 
 int error() { 

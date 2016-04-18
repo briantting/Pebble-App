@@ -193,11 +193,14 @@ void* listen_to_pebble(void* argv) {
             char main_reply [MSG_SIZE];
             if(strcmp(token, "/change") == 0) {
               isCelsius = !isCelsius;
-              write(arduino, "1\0", 1);
+              write(arduino, "c\0", 1);
               strcpy(main_reply, "Temp metric changed");
             } else if (strcmp(token, "/disarm") == 0) {
-              write(arduino, "2\0", 1);
+              write(arduino, "d\0", 1);
               strcpy(main_reply, "Alarm disarmed");
+            } else if (strcmp(token, "/arm") == 0) {
+              write(arduino, "a\0", 1);
+              strcpy(main_reply, "Alarm armed");
             } else {
               strcpy(main_reply, "Invalid POST request");
             }
@@ -206,8 +209,7 @@ void* listen_to_pebble(void* argv) {
             } else {
               strcat(reply, "Lost connection with Arduino");
             }
-          } 
-          else {
+          } else {
             strcat(reply,"Only able to handle GET and POST requests");
           }
 
