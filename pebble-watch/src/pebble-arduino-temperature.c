@@ -44,7 +44,6 @@ void temperature_down_click_handler(ClickRecognizerRef recognizer, void *context
   app_message_outbox_send();
 }
 
-
 void temperature_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);

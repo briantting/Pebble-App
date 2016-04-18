@@ -55,10 +55,11 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     layer_add_child(window_layer, text_layer_get_layer(msg_received_text_layer));
     layer_add_child(window_layer, text_layer_get_layer(degree_layer));
 
-
   	window_stack_push(temp_window, true);
   	app_timer = app_timer_register(4000, clear_recevied_message, msg_received_text_layer);
-  } else {
+
+  } 
+  else {
   	//A message was sent, but none were received. 
   	if(sent_msg) {
   		text_layer_set_text(main_text_layer, "Watch no longer connected to the server. Exiting program");
