@@ -87,12 +87,14 @@ void loop() {
   
   while (1) {
     IncomingByte = SerialMonitorRead ();
-    if (IncomingByte == 's') {
-      IsCelsius = !IsCelsius;  
+    if (IncomingByte == 'c') {
+      IsCelsius = !IsCelsius;
     } else if (IncomingByte == 'a') {
       alarm = 'a';
+      Serial.print("a: a\n");
     } else if (IncomingByte == 'd') {
-      alarm  = 'd';
+      alarm = 'd';
+      Serial.print("a: d\n");
     }
     
     Wire.requestFrom(THERM, 2);
@@ -134,14 +136,10 @@ void loop() {
     inches = duration / 74 / 2;        // Convert to inches
     
     if (alarm != 'd') {
-      if (inches > 3 || alarm == 't') {
+      if (inches > 3 && alarm == 'a') {
         alarm = 't';
         Serial.print("a: t\n");
-      } else {
-        Serial.print("a: a\n");
       }
-    } else {
-      Serial.print("a: d\n");
     }
     delay(500);
   }
@@ -281,6 +279,7 @@ char SerialMonitorRead () {
   char IncomingByte = 'x';
     if (Serial.available() > 0) {
       IncomingByte = Serial.read();
+      Serial.print("r: ");
     }
     return IncomingByte;
 }
