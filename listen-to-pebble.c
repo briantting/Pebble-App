@@ -24,8 +24,7 @@ char reply[MSG_SIZE];
 
 int messageReceived() {
   time_t tick = time(NULL);
-  double timeElapsed = 0;
-  while (!received || timeElapsed < waitTime);
+  while (!received && difftime(time(NULL), tick) < waitTime);
   int ret_val = received;
   pthread_mutex_lock(&lock);
   received = 0;
@@ -217,6 +216,8 @@ void* listen_to_pebble(void* argv) {
           strcat(reply, "no message received from pebble");
           
         }
+        puts("REPLY:");
+        puts(reply);
 
         strcat(reply, end_reply);
 
