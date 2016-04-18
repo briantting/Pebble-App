@@ -141,7 +141,7 @@ void loop() {
     inches = duration / 74 / 2;        // Convert to inches
     
     if (alarm != 'd') {
-      if (alarm == 't' && millis() - time > 6000) {
+      if (alarm == 't' && millis() - time > 30000) {
         alarm = 's';
         Serial.print("a: s\n");
       } else if (alarm == 'a' && inches > 3) {
