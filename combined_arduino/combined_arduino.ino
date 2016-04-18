@@ -16,6 +16,7 @@ const int pingPin = 11;
 unsigned int duration;
 unsigned int inches;
 char alarm = 'd';
+unsigned long time = millis();
 
 /* Function prototypes */
 void Cal_temp (int&, byte&, byte&, bool&);
@@ -119,7 +120,11 @@ void loop() {
       digitalWrite(BLUE, HIGH);
       digitalWrite(RED, LOW);
       digitalWrite(GREEN, LOW);
-    } else {
+    } else if (alarm == 't') {
+      digitalWrite(RED, HIGH);
+      digitalWrite(BLUE, HIGH);
+      digitalWrite(GREEN, LOW);
+    } else if (alarm == 's') {
       digitalWrite(RED, HIGH);
       digitalWrite(GREEN, LOW);
       digitalWrite(BLUE, LOW);
@@ -136,9 +141,13 @@ void loop() {
     inches = duration / 74 / 2;        // Convert to inches
     
     if (alarm != 'd') {
-      if (inches > 3 && alarm == 'a') {
+      if (alarm == 't' && millis() - time > 6000) {
+        alarm = 's';
+        Serial.print("a: s\n");
+      } else if (alarm == 'a' && inches > 3) {
         alarm = 't';
         Serial.print("a: t\n");
+        time = millis();
       }
     }
     delay(500);
