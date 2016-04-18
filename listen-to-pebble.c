@@ -103,7 +103,6 @@ void* listen_to_pebble(void* argv) {
       char buff [MSG_SIZE]; 
       fgets(buff, sizeof(buff), stdin); 
       if (strcmp(buff, "q\n") == 0) {
-        puts("message received.");
         break; 
       }
     } else {
@@ -160,13 +159,13 @@ void* listen_to_pebble(void* argv) {
       	 	if(strncmp(request, "GET", 3) == 0) {
       	 		
       	 		if(strcmp(token, "/high") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_max);
+      	 			snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_max);
       	 			strcat(reply, metric);
       	 		} else if (strcmp(token, "/average") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_avg);
+      	 			snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_avg);
       	 			strcat(reply, metric);
       	 		} else if (strcmp(token, "/low") == 0) {
-      	 			snprintf(&reply[strlen(reply)], 80, "%4.1f", temp_min);
+      	 			snprintf(&reply[strlen(reply)], 80, "%5.2f", temp_min);
       	 			strcat(reply, metric);
       	 		}
       	 		 else {

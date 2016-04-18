@@ -38,7 +38,7 @@ void* listen_to_arduino(void* _) {
   // configure connection to Arduino
 
   //Specific to macs and our team's arduino device
-  int arduino = open("/dev/cu.usbmodem1411", O_RDWR);
+  arduino = open("/dev/cu.usbmodemFD121", O_RDWR);
 
   //Exits thread if there was an issue
   if(arduino == -1) {
