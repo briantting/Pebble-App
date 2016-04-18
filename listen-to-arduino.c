@@ -38,7 +38,7 @@ void* listen_to_arduino(void* _) {
   // configure connection to Arduino
 
   //Specific to macs and our team's arduino device
-  arduino = open("/dev/cu.usbmodemFD121", O_RDWR);
+  arduino = open("/dev/cu.usbmodem1411", O_RDWR);
 
   //Exits thread if there was an issue
   if(arduino == -1) {
@@ -58,24 +58,6 @@ void* listen_to_arduino(void* _) {
   char temp_buff [BUFF_SIZE]; // holds strings read from Arduino
   tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
   while(1) {
-
-    // check if user input 'q' to quit
-    /*fd_set set;*/
-    /*FD_ZERO(&set);*/
-    /*FD_SET(0, &set);*/
-    /*FD_SET(arduino, &set);*/
-    /*if(select(arduino + 1, &set, NULL, NULL, NULL) == -1) {*/
-        /*perror("select");*/
-        /*exit(1);*/
-    /*}*/
-    /*if (FD_ISSET(0, &set)) { */
-      /*char buff [BUFF_SIZE]; */
-      /*fgets(buff, sizeof(buff), stdin); */
-      /*if (strcmp(buff, "q\n") == 0) {*/
-        /*break; */
-      /*}*/
-    /*}*/
-
     // pull data from Arduino and enqueue
     // save string from Ardunito to temp_buff
     read_temperature(arduino, temp_buff); 
