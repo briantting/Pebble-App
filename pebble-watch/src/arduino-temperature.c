@@ -1,7 +1,7 @@
 #include <pebble.h>
 static Window *window, *temp_window;
 static TextLayer *main_text_layer, *msg_received_text_layer;
-static char msg[100];
+static char msg[200];
 AppTimer *app_timer;
 
 void clear_recevied_message(void *data) {
@@ -23,10 +23,15 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   temp_window = window_create();
   Layer *window_layer = window_get_root_layer(temp_window);
   GRect bounds = layer_get_bounds(window_layer);
-  msg_received_text_layer = text_layer_create(GRect(5,60,bounds.size.w - 5, bounds.size.h-60));
-  text_layer_set_text_alignment(msg_received_text_layer, GTextAlignmentLeft);
+  msg_received_text_layer = text_layer_create(GRect(5, 60, bounds.size.w - 15, bounds.size.h-60));
+  TextLayer *degree_layer = text_layer_create(GRect(100, 55, 20, 20));
+  
+  text_layer_set_text_alignment(msg_received_text_layer, GTextAlignmentRight);
+  text_layer_set_text_alignment(degree_layer, GTextAlignmentRight);
+  text_layer_set_background_color(degree_layer, GColorClear);
+  text_layer_set_font(degree_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
   // text_layer_set_background_color(msg_received_text_layer, GColorClear);
-  text_layer_set_font(msg_received_text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_font(msg_received_text_layer, fonts_get_system_font(FONT_KEY_DROID_SERIF_28_BOLD));
 
 
   Tuple *text_tuple = dict_find(received, key);
@@ -39,7 +44,11 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     	strcpy(msg, "no value!"); 
     } 
     text_layer_set_text(msg_received_text_layer, msg);
+    text_layer_set_text(degree_layer, "o");
     layer_add_child(window_layer, text_layer_get_layer(msg_received_text_layer));
+    layer_add_child(window_layer, text_layer_get_layer(degree_layer));
+
+
   	window_stack_push(temp_window, true);
   	app_timer = app_timer_register(4000, clear_recevied_message, msg_received_text_layer);
   }
@@ -133,8 +142,8 @@ static void init(void) {
   app_message_register_inbox_dropped(in_dropped_handler);
   app_message_register_outbox_sent(out_sent_handler);
   app_message_register_outbox_failed(out_failed_handler);
-  const uint32_t inbound_size = 100;
-  const uint32_t outbound_size = 100;
+  const uint32_t inbound_size = 200;
+  const uint32_t outbound_size = 200;
   app_message_open(inbound_size, outbound_size);
 
     // need this for adding the listener

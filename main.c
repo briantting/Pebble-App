@@ -4,18 +4,16 @@ http://www.prasannatech.net/2008/07/socket-programming-tutorial.html
 and
 http://www.binarii.com/files/papers/c_sockets.txt
  */
-
-/*#include <time.h>*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include "listen-to-pebble.h"
 #include "listen-to-arduino.h"
-#include "server.h"
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 float average = 0;
 float min, max;
+int arduino;
 
 
 int error() { 
@@ -38,13 +36,13 @@ int main(int argc, char *argv[])
 
   puts("Enter 'q' at any time to quit.");
   pthread_t t1, t2;
-  if ( pthread_create( &t1, NULL, listen_to_arduino, argv) != 0  ) {
+  if (pthread_create(&t1, NULL, listen_to_arduino, argv) != 0) {
     return error(); 
   }
-  if ( pthread_create( &t2, NULL, listen_to_pebble, NULL  ) != 0  ) {
+  if (pthread_create(&t2, NULL, listen_to_pebble, argv) != 0) {
     return error(); 
   } 
-  if ( pthread_join( t1, NULL  ) != 0  ) { 
+  if (pthread_join(t2, NULL) != 0) { 
     return error(); 
   } 
 }

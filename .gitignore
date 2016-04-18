@@ -2,3 +2,14 @@ heap-tester
 heap-tester.dSYM
 server
 q-tester*
+pebble-watch/.DS_Store
+pebble-watch/src/.DS_Store
+pebble-watch/src/js/.DS_Store
+pebble-watch/waftools/aplite_legacy.py
+pebble-watch/waftools/configure_appinfo.py
+pebble-watch/waftools/pebble_sdk_version.py
+server.c
+server.h
+listen-to-pebble.o
+*.DS_Store
+server.dSYM

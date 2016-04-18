@@ -1,9 +1,8 @@
 CC = clang
 
-all: clean server
-
-server: 
-	$(CC) -o server main.c server.c listen-to-arduino.c listen-to-pebble.c queue.c
+all: clean
+	$(CC) -g -o server main.c listen-to-arduino.c listen-to-pebble.c queue.c
+	#valgrind --leak-check=full ./server $(SERVER)
 	./server $(SERVER)
 
 temp:
