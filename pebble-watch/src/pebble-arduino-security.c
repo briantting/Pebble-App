@@ -16,6 +16,7 @@ void arm_countdown(void *something) {
 		countdown = app_timer_register(1000, arm_countdown, NULL);
 	} else {
   	text_layer_set_text(count_down_text_layer, "");
+  	time_remaining = 30;
 	}
 }
 
