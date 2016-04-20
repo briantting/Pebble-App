@@ -19,12 +19,12 @@ extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
 int TEMP_LENGTH = 80;
-double waitTime = 5;
+double WAIT_TIME = 5;
 char reply[MSG_SIZE];
 
-int messageReceived() {
+int message_received() {
   time_t tick = time(NULL);
-  while (!received && difftime(time(NULL), tick) < waitTime);
+  while (!received && difftime(time(NULL), tick) < WAIT_TIME);
   int ret_val = received;
   pthread_mutex_lock(&lock);
   received = 0;
@@ -122,15 +122,29 @@ void* listen_to_pebble(void* argv) {
       }
       
       // FOR DEBUGGING ONLY
-      if (strcmp(buff, "c\n")) { 
-        puts("Send signal to change temperature units.");
-        write(arduino, "c\0", 1);
-      } else if (strcmp(buff, "a\n")) { 
-        puts("Send signal to arm alarm.");
-        write(arduino, "a\0", 1);
-      } else if (strcmp(buff, "d\n")) { 
-        puts("Send signal to disarm alarm.");
-        write(arduino, "d\0", 1);
+      int send_message = 0;
+      switch (buff[0]) {
+        case 'c': 
+          puts("Send signal to change temperature units."); 
+          send_message = 1;
+          break;
+        case 'a':
+          puts("Send signal to arm alarm.");
+          send_message = 1;
+          break;
+        case 'd':
+          puts("Send signal to disarm alarm.");
+          send_message = 1;
+          break;
+      }
+      if (send_message) {
+        char msg [2] = {buff[0], '\0'};
+        write(arduino, msg, 1); 
+        if (message_received()) {
+          puts("Arduino received message.");
+        } else {
+          puts("No response from Arduino.");
+        }
       }
     } else {
       int sin_size = sizeof(struct sockaddr_in);
@@ -215,7 +229,7 @@ void* listen_to_pebble(void* argv) {
             } else {
               strcpy(main_reply, "Invalid POST request");
             }
-            if (messageReceived()) {
+            if (message_received()) {
               strcat(reply, main_reply);
               puts("reply to pebble");
               puts(main_reply);
