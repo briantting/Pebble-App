@@ -1,4 +1,4 @@
-#include <Wire.h> 
+ #include <Wire.h> 
  
 #define BAUD (9600)    /* Serial baud define */
 #define _7SEG (0x38)   /* I2C address for 7-Segment */
