@@ -147,12 +147,12 @@ void loop() {
     Cal_temp (Decimal, Temperature_H, Temperature_L, IsPositive);
     
     /* Display temperature on the serial monitor */
-    if (!setAlarm) {
-      SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
-    }
+    SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
     
     /* Display temperature on the 7-Segment */
-    Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
+    if (!setAlarm) {
+      Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
+    }
     
     /* Alarm Stuff */
     if (alarm == 'd') {
