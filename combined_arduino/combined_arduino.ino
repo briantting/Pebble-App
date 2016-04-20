@@ -16,7 +16,6 @@ const int pingPin = 11;
 unsigned int duration;
 unsigned int inches;
 char alarm = 'd';
-unsigned long time = millis();
 
 /* Function prototypes */
 void Cal_temp (int&, byte&, byte&, bool&);
@@ -54,7 +53,6 @@ void loop() {
   
   bool setArm;
   unsigned long setArmTime;
-  bool setDisarm;
   unsigned long setDisarmTime;
   
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
@@ -97,16 +95,14 @@ void loop() {
       IsCelsius = !IsCelsius;
     } else if (IncomingByte == 'a') {
       setArm = true;
-      setDisarm = false;
       setArmTime = millis();
     } else if (IncomingByte == 'd') {
-      setDisarm = true;
-      setArm = false;
-      setDisarmTime = millis();
+      alarm = 'd';
+      Serial.print("a: d\n");
     }
 
-    // starts set alarm countdown
-    if (setArm) {
+    // starts set arm countdown
+    if (alarm == 'd' && setArm) {
       Send7SEG(4,NumberLookup[0]);
       Send7SEG(3,NumberLookup[0]);
       Send7SEG(2,NumberLookup[0]);
@@ -127,48 +123,6 @@ void loop() {
         Send7SEG(1,NumberLookup[5]);
       }
     }
-
-    if (setDisarm) {
-      Send7SEG(4,NumberLookup[0]);
-      Send7SEG(3,NumberLookup[0]);
-      if (millis() - setDisarmTime > 10000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[0]);
-        alarm = 'd';
-        Serial.print("a: d\n");
-        setDisarm = false;
-              } else if (millis() - setDisarmTime > 9000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[1]);
-      } else if (millis() - setDisarmTime > 8000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[2]);
-      } else if (millis() - setDisarmTime > 7000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[3]);
-      } else if (millis() - setDisarmTime > 6000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[4]);
-      } else if (millis() - setDisarmTime > 5000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[5]);
-      } else if (millis() - setDisarmTime > 4000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[6]);
-      } else if (millis() - setDisarmTime > 3000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[7]);
-      } else if (millis() - setDisarmTime > 2000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[8]);
-      } else if (millis() - setDisarmTime > 1000) {
-        Send7SEG(2,NumberLookup[0]);
-        Send7SEG(1,NumberLookup[9]);
-      } else if (millis() - setDisarmTime > 0000) {
-        Send7SEG(2,NumberLookup[1]);
-        Send7SEG(1,NumberLookup[0]);
-      }
-    }
     
     Wire.requestFrom(THERM, 2);
     Temperature_H = Wire.read();
@@ -181,7 +135,7 @@ void loop() {
     SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
     
     /* Display temperature on the 7-Segment */
-    if (!setArm || !setDisarm) {
+    if (!setArm && alarm != 't') {
       Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
     }
     
@@ -215,16 +169,52 @@ void loop() {
     inches = duration / 74 / 2;        // Convert to inches
     
     if (alarm != 'd') {
-      if (alarm == 't' && millis() - time > 30000) {
-        alarm = 's';
-        Serial.print("a: s\n");
+      if (alarm == 't') {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        if (millis() - setDisarmTime > 10000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[0]);
+          alarm = 's';
+          Serial.print("a: s\n");
+        } else if (millis() - setDisarmTime > 9000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[1]);
+        } else if (millis() - setDisarmTime > 8000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[2]);
+        } else if (millis() - setDisarmTime > 7000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[3]);
+        } else if (millis() - setDisarmTime > 6000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[4]);
+        } else if (millis() - setDisarmTime > 5000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[5]);
+        } else if (millis() - setDisarmTime > 4000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[6]);
+        } else if (millis() - setDisarmTime > 3000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[7]);
+        } else if (millis() - setDisarmTime > 2000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[8]);
+        } else if (millis() - setDisarmTime > 1000) {
+          Send7SEG(2,NumberLookup[0]);
+          Send7SEG(1,NumberLookup[9]);
+        } else if (millis() - setDisarmTime > 0000) {
+          Send7SEG(2,NumberLookup[1]);
+          Send7SEG(1,NumberLookup[0]);
+        }
       } else if (alarm == 'a' && inches > 3) {
         alarm = 't';
         Serial.print("a: t\n");
-        time = millis();
+        setDisarmTime = millis();
       }
     }
-    delay(500);
+    delay(100);
   }
 } 
 
