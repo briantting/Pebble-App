@@ -52,6 +52,9 @@ void loop() {
   bool IsCelsius = true;
   char IncomingByte;
   
+  bool setAlarm;
+  unsigned long setAlarmTime;
+  
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
      and Digits 1, 2, 3 AND 4 are NOT blanked */
   Wire.beginTransmission(_7SEG);   
@@ -91,11 +94,49 @@ void loop() {
     if (IncomingByte == 'c') {
       IsCelsius = !IsCelsius;
     } else if (IncomingByte == 'a') {
-      alarm = 'a';
-      Serial.print("a: a\n");
+      setAlarm = true;
+      setAlarmTime = millis();
     } else if (IncomingByte == 'd') {
       alarm = 'd';
       Serial.print("a: d\n");
+    }
+
+    // starts set alarm countdown
+    if (setAlarm) {
+      if (millis() - setAlarmTime > 5000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[0]);
+        alarm = 'a';
+        Serial.print("a: a\n");
+        setAlarm = false;
+      } else if (millis() - setAlarmTime > 4000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[1]);
+      } else if (millis() - setAlarmTime > 3000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[2]);
+      } else if (millis() - setAlarmTime > 2000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[3]);
+      } else if (millis() - setAlarmTime > 1000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[4]);
+      } else if (millis() - setAlarmTime > 0000) {
+        Send7SEG(4,NumberLookup[0]);
+        Send7SEG(3,NumberLookup[0]);
+        Send7SEG(2,NumberLookup[0]);
+        Send7SEG(1,NumberLookup[5]);
+      }
     }
     
     Wire.requestFrom(THERM, 2);
@@ -106,7 +147,9 @@ void loop() {
     Cal_temp (Decimal, Temperature_H, Temperature_L, IsPositive);
     
     /* Display temperature on the serial monitor */
-    SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
+    if (!setAlarm) {
+      SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
+    }
     
     /* Display temperature on the 7-Segment */
     Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
