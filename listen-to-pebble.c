@@ -120,6 +120,18 @@ void* listen_to_pebble(void* argv) {
       if (strcmp(buff, "q\n") == 0) {
         break; 
       }
+      
+      // FOR DEBUGGING ONLY
+      if (strcmp(buff, "c\n")) { 
+        puts("Send signal to change temperature units.");
+        write(arduino, "c\0", 1);
+      } else if (strcmp(buff, "a\n")) { 
+        puts("Send signal to arm alarm.");
+        write(arduino, "a\0", 1);
+      } else if (strcmp(buff, "d\n")) { 
+        puts("Send signal to disarm alarm.");
+        write(arduino, "d\0", 1);
+      }
     } else {
       int sin_size = sizeof(struct sockaddr_in);
       fd = accept(sock, (struct sockaddr *)&client_addr,(socklen_t *)&sin_size);
