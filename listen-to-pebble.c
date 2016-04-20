@@ -205,6 +205,9 @@ void* listen_to_pebble(void* argv) {
             }
             if (messageReceived()) {
               strcat(reply, main_reply);
+              puts("reply to pebble");
+              puts(main_reply);
+              puts("end reply");
             } else {
               strcat(reply, "Lost connection with Arduino");
             }

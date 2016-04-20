@@ -79,25 +79,35 @@ void* listen_to_arduino(void* _) {
         printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
             temp, min, max, average);
         pthread_mutex_unlock(&lock);
+        break;
       case 'a': 
         switch (buff[3]) {
         case 'a': // armed
           send(sock, buff, 1, 0);
+          break;
+        case 't': // triggered
+          send(sock, buff, 1, 0);
+          break;
         case 'd': // disarmed
           send(sock, buff, 1, 0);
+          break;
         case 's': // sounded
           send(sock, buff, 1, 0);
+          break;
         default:
           perror(buff);
           exit(1);
+          break;
       }
       case 'r': // received message
         pthread_mutex_lock(&lock);
         received = 1;
         pthread_mutex_unlock(&lock);
+        break;
       default:
         perror(buff);
         exit(1);
+        break;
     }
   }
   close(arduino);
