@@ -51,7 +51,7 @@ void loop() {
   bool IsCelsius = true;
   char IncomingByte;
   
-  bool setArm;
+  bool setArm = false;
   unsigned long setArmTime;
   unsigned long setDisarmTime;
   
