@@ -150,7 +150,7 @@ void* listen_to_pebble(void* argv) {
       int sin_size = sizeof(struct sockaddr_in);
       fd = accept(sock, (struct sockaddr *)&client_addr,(socklen_t *)&sin_size);
       if (fd != -1) {
-        printf("Server got a connection from (%s, %d)\n",
+        printf("\nServer got a connection from (%s, %d)\n",
             inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
 
         // buffer to read data into
@@ -225,7 +225,7 @@ void* listen_to_pebble(void* argv) {
               strcpy(main_reply, "Alarm disarmed");
             } else if (strcmp(token, "/arm") == 0) {
               write(arduino, "a\0", 1);
-              strcpy(main_reply, "Alarm armed");
+              strcpy(main_reply, "Arming alarm");
             } else {
               strcpy(main_reply, "Invalid POST request");
             }
