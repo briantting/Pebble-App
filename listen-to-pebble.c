@@ -226,6 +226,9 @@ void* listen_to_pebble(void* argv) {
             } else if (strcmp(token, "/arm") == 0) {
               write(arduino, "a\0", 1);
               strcpy(main_reply, "Arming alarm");
+            } else if (strcmp(token, "/toggle") == 0) {
+              write(arduino, "t\0", 1);
+              strcpy(main_reply, "Display toggled");
             } else {
               strcpy(main_reply, "Invalid POST request");
             }
