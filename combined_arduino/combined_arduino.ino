@@ -54,6 +54,8 @@ void loop() {
   bool setArm = false;
   unsigned long setArmTime;
   unsigned long setDisarmTime;
+
+  bool standby = false;
   
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
      and Digits 1, 2, 3 AND 4 are NOT blanked */
@@ -99,6 +101,8 @@ void loop() {
     } else if (IncomingByte == 'd') {
       alarm = 'd';
       Serial.print("a: d\n");
+    } else if (IncomingByte == 't') {
+      standby = !standby;
     }
 
     // starts set arm countdown
@@ -135,7 +139,7 @@ void loop() {
     SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
     
     /* Display temperature on the 7-Segment */
-    if (!setArm && alarm != 't') {
+    if (!setArm && alarm != 't' && !standby) {
       Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
     }
     
