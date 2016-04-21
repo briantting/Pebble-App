@@ -79,9 +79,16 @@ void* listen_to_arduino(void* _) {
         pthread_mutex_lock(&lock);
         get_extrema(q, &min, &max); // get min and max values in queue
         average = (average * (num - 1) + temp) / num; // update average
+
+        printf("."); // print dots to signify temp reading
+        fflush(stdout);
+
         if (difftime(time(NULL), last_temp_transmission) > TEMP_TIME_INTERVAL) {
           puts("\n* Missed temperature transmission from arduino. *\n");
+          send(sock, "", 1, 0);
+          break;
         }
+        
         last_temp_transmission = time(NULL);
         pthread_mutex_unlock(&lock);
         break;
