@@ -33,9 +33,12 @@ void read_message(int arduino, char *buff) {
 
   //Do not exceed reading longer than the length of the msg
   while(!total_bytes || buff[total_bytes - 1] != '\n') {
+    puts("*");
     //Read only one byte at a time and only execute block if a byte is received
     total_bytes += read(arduino, &buff[total_bytes], 1);
+    puts("+");
   }
+  puts("finished reading");
 }
 
 void* listen_to_arduino(void* _) {
