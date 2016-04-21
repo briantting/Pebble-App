@@ -2,19 +2,12 @@
 #define RESET_ALARM 5
 
 extern Window *security_window;
-Window *armed_window;
-TextLayer *arm_text_layer, *disarm_text_layer, *count_down_text_layer, *armed_text_layer;
-AppTimer *countdown, *clear_window;
+TextLayer *arm_text_layer, *disarm_text_layer, *count_down_text_layer;
+AppTimer *countdown = NULL;
 int time_remaining = RESET_ALARM;
 char security_buff[10];
 bool is_armed = false;
 
-void clear_armed_window (void * data) {
-	text_layer_destroy(armed_text_layer);
-	window_destroy(armed_window);
-	window_stack_pop(true);
-	is_armed = false;
-}
 
 void arm_countdown(void *something) {
 	snprintf(security_buff, sizeof(security_buff), "%d", time_remaining);
@@ -26,21 +19,9 @@ void arm_countdown(void *something) {
 		countdown = app_timer_register(1000, arm_countdown, NULL);
 	} 
 	else {
-		armed_window = window_create();
- 		Layer *window_layer = window_get_root_layer(armed_window);
-  	GRect bounds = layer_get_bounds(window_layer);
-  	armed_text_layer = text_layer_create(GRect(0,bounds.size.h / 2 - 20,bounds.size.w - 5, 40));
-
-  	text_layer_set_text_alignment(armed_text_layer, GTextAlignmentCenter);
-  	text_layer_set_font(armed_text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  	text_layer_set_text(armed_text_layer, "Alarm is armed");
-  	layer_add_child(window_layer, text_layer_get_layer(armed_text_layer));
-  	window_stack_push(armed_window, true);
-
   	text_layer_set_text(count_down_text_layer, "");
   	time_remaining = RESET_ALARM;
 
-  	clear_window = app_timer_register(2000, clear_armed_window, NULL);
 	}
 }
 
@@ -75,10 +56,13 @@ void security_down_click_handler(ClickRecognizerRef recognizer, void *context) {
   Tuplet value = TupletCString(key, "disarm");
   dict_write_tuplet(iter, &value);
   app_message_outbox_send();
-  app_timer_cancel(countdown);
-  text_layer_set_text(count_down_text_layer, "");
-  time_remaining = RESET_ALARM;
-  is_armed = false;
+  if(!countdown) {
+  	app_timer_cancel(countdown);
+  	text_layer_set_text(count_down_text_layer, "");
+  	time_remaining = RESET_ALARM;
+  	is_armed = false;	
+  }
+  
 }
 
 

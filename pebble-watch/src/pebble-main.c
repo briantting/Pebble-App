@@ -14,14 +14,25 @@ void clear_recevied_message(void *data) {
 	window_stack_pop(true);
 }
 
+void exit_program(void *data) {
+	window_stack_pop_all(true);
+}
+
 void out_sent_handler(DictionaryIterator *sent, void *context) {
   // outgoing message was delivered -- do nothing
   sent_msg = true;
+  printf("Sent message\n");
 }
 void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
   // outgoing message failed
   text_layer_set_text(main_text_layer, "Watch no longer connected to the server. Exiting program");
-  // deinit();
+  if(app_timer) {
+  	app_timer_cancel(app_timer);
+  }
+
+  app_timer = app_timer_register(3000, (AppTimerCallback) exit_program, NULL);
+  printf("Outfailed deinit");
+
 }
 void in_received_handler(DictionaryIterator *received, void *context) {
   // incoming message received
@@ -62,8 +73,17 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   else {
   	//A message was sent, but none were received. 
   	if(sent_msg) {
+  		Layer *main_window_layer = window_get_root_layer(window);
+  		printf("Inbox deinit");
   		text_layer_set_text(main_text_layer, "Watch no longer connected to the server. Exiting program");
-  		app_timer = app_timer_register(4000, (AppTimerCallback) deinit, NULL);
+  		layer_add_child(main_window_layer, text_layer_get_layer(main_text_layer));
+  		if(temperature_window) {
+  			window_stack_remove(temperature_window, true);
+  		}
+  		if(security_window) {
+  			window_stack_remove(security_window, true);
+  		}
+  		app_timer = app_timer_register(4000, (AppTimerCallback) exit_program, NULL);
   		
   	}
   	
@@ -79,7 +99,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
 void in_dropped_handler(AppMessageResult reason, void *context) {
   // incoming message dropped
   text_layer_set_text(main_text_layer, "Error in!");
-  // deinit();
+  deinit();
 }
 
 /* This is called when the up button is clicked */
@@ -176,14 +196,22 @@ static void init(void) {
 }
 
 static void deinit(void) {
-  window_destroy(window);
-  window_destroy(temperature_window);
-  window_stack_pop_all(true);
-  // window_destroy(window);
+  if(window) {
+  	printf("destroy window");
+  	window_stack_remove(window, true);
+  	window_destroy(window);
+  }
+  if(temperature_window) {
+  	printf("Destroy temp window\n");
+  	window_stack_remove(temperature_window, true);
+  	window_destroy(temperature_window);
+  } 
+  
 }
 
 int main(void) {
   init();
   app_event_loop();
+  printf("exiting program");
   deinit();
 }
