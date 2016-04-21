@@ -21,6 +21,7 @@ extern int sock;
 extern int received;
 
 char test [BUFF_SIZE]; 
+double TEMP_TIME_INTERVAL = 1;
 
 void read_message(int arduino, char *buff) {
 
@@ -61,6 +62,7 @@ void* listen_to_arduino(void* _) {
   int num = 0; // for computing average
   char buff [BUFF_SIZE]; // holds strings read from Arduino
   tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
+  time_t last_temp_transmission = time(NULL);
   while(1) {
     // pull data from Arduino and enqueue
     // save string from Ardunito to buff
@@ -77,8 +79,10 @@ void* listen_to_arduino(void* _) {
         pthread_mutex_lock(&lock);
         get_extrema(q, &min, &max); // get min and max values in queue
         average = (average * (num - 1) + temp) / num; // update average
-        printf(".");
-        fflush(stdout);
+        if (difftime(time(NULL), last_temp_transmission) > TEMP_TIME_INTERVAL) {
+          puts("\n* Missed temperature transmission from arduino. *\n");
+        }
+        last_temp_transmission = time(NULL);
         pthread_mutex_unlock(&lock);
         break;
       case 'a': 
