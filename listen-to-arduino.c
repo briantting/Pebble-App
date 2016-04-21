@@ -9,9 +9,10 @@
 #include <float.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <time.h>
 #define BUFF_SIZE 10000
 #define TEMP_MSG_LENGTH 100
-#define SECS_PER_HOUR 3600
+#define SIZE_OF_QUEUE 36000
 
 extern float average, min, max;
 extern pthread_mutex_t lock;
@@ -56,10 +57,11 @@ void* listen_to_arduino(void* _) {
   tcsetattr(arduino, TCSANOW, &options); // set options
 
 
-  queue_t* q = new_queue(SECS_PER_HOUR);
+  queue_t* q = new_queue(SIZE_OF_QUEUE);
   int num = 0; // for computing average
   char buff [BUFF_SIZE]; // holds strings read from Arduino
   tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
+  time_t last_arduino_transmission = time(NULL);
   while(1) {
     // pull data from Arduino and enqueue
     // save string from Ardunito to buff
@@ -76,8 +78,8 @@ void* listen_to_arduino(void* _) {
         pthread_mutex_lock(&lock);
         get_extrema(q, &min, &max); // get min and max values in queue
         average = (average * (num - 1) + temp) / num; // update average
-        printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",
-            temp, min, max, average);
+        /*printf("\ntemp: %f\nmin: %f\nmax: %f\naverage: %f\n",*/
+            /*temp, min, max, average);*/
         pthread_mutex_unlock(&lock);
         break;
       case 'a': 
