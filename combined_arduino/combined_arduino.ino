@@ -141,7 +141,7 @@ void loop() {
     /* Display temperature on the 7-Segment */
     if (!setArm && alarm != 't' && !standby) {
       Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
-    } else {
+    } else if (!setArm && alarm != 't' && standby) {
       Send7SEG(4,0x00);
       Send7SEG(3,0x00);
       Send7SEG(2,0x00);
