@@ -103,8 +103,10 @@ void loop() {
     } else if (IncomingByte == 'd') {
       alarm = 'd';
       Serial.print("a: d\n");
-    } else if (IncomingByte == 't') {
-      standby = !standby;
+    } else if (IncomingByte == 'n') {
+      standby = false;
+    } else if (IncomingByte == 'f') {
+      standby = true;
     }
 
     // starts set arm countdown
