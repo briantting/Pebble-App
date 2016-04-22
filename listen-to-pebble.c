@@ -19,7 +19,7 @@ extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
 int TEMP_LENGTH = 80;
-double WAIT_TIME = 5;
+double WAIT_TIME = 1;
 char reply[MSG_SIZE];
 
 int message_received() {
