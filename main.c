@@ -19,7 +19,7 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 // track temperature data
 float average = 0; 
-float min, max;
+float min, max, latest;
 
 int received; // flag for relaying Arduino's message confirmation
 int arduino; // fd for arduino
@@ -47,11 +47,14 @@ int main(int argc, char *argv[])
   if (pthread_create(&t1, NULL, listen_to_arduino, argv) != 0) {
     return error(); 
   }
-  if (pthread_create(&t2, NULL, listen_to_pebble, argv) != 0) {
+  if (pthread_join(t1, NULL) != 0) { 
     return error(); 
   } 
-  if (pthread_join(t2, NULL) != 0) { 
-    return error(); 
-  } 
+  /*if (pthread_create(&t2, NULL, listen_to_pebble, argv) != 0) {*/
+    /*return error(); */
+  /*} */
+  /*if (pthread_join(t2, NULL) != 0) { */
+    /*return error(); */
+  /*} */
 }
 

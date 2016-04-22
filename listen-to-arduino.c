@@ -36,25 +36,26 @@ int open_device() {
   return open(DEVICE, O_RDWR);
 }
 
-/*void send_to_pebble(char* msg) { */
-  /*struct sockaddr_in server_addr;*/
-  /*server_addr.sin_port = htons(CLIENT_PORT); // specify port number*/
+void send_to_pebble(char* msg) { 
+  sock = get_socket(CLIENT_PORT); 
+  struct sockaddr_in server_addr;
+  server_addr.sin_port = htons(CLIENT_PORT); // specify port number
 
-  /*// specify IP address TODO: this should not be hard coded*/
-  /*if(inet_pton(AF_INET, "0.0.0.0", &server_addr.sin_addr) <= 0) { */
-    /*perror("inet_pton"); */
-    /*exit(1); */
-  /*} */
+  // specify IP address TODO: this should not be hard coded
+  if(inet_pton(AF_INET, "0.0.0.0", &server_addr.sin_addr) <= 0) { 
+    perror("inet_pton"); 
+    exit(1); 
+  } 
 
-  /*// estabish connectio with IP address through socket*/
-  /*if (connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {*/
-    /*perror("connect");*/
-    /*exit(1);*/
-  /*} */
+  // estabish connectio with IP address through socket
+  if (connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+    perror("connect");
+    exit(1);
+  } 
 
-  /*send(sock, msg, strlen(msg), 0);*/
-  /*close(sock);*/
-/*}*/
+  send(sock, msg, strlen(msg), 0);
+  close(sock);
+}
 
 void read_message(int arduino, char *buff) {
 
@@ -79,11 +80,12 @@ void* listen_to_arduino(void* _) {
 
   //Specific to computer and arduino device
   arduino = open_device();
-  sock = get_socket(CLIENT_PORT); 
 
   //Exits thread if there was an issue
   if(arduino == -1) {
-    perror("There was a problem accessing the Arduino.");
+    char* msg = "There was a problem accessing the Arduino.";
+    send_to_pebble(msg);
+    perror(msg);
     exit(1);  //May want to consider a non-NULL error type
   }
   
