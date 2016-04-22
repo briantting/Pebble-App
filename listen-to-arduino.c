@@ -1,5 +1,6 @@
 #include "listen-to-arduino.h"
 #include "queue.h"
+#include "server.h"
 #include <fcntl.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -10,6 +11,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <time.h>
 #define BUFF_SIZE 10000
 #define TEMP_MSG_LENGTH 100
@@ -18,15 +20,14 @@
 extern float average, min, max;
 extern pthread_mutex_t lock;
 extern int arduino;
-extern int sock;
 extern int received;
-extern struct sockaddr_in server_addr;
 
+int sock;
+int CLIENT_PORT = 8000;
 char* DEVICE = "/dev/cu.usbmodem1411";
 double TEMP_TIME_INTERVAL = 2;
 
 int open_device() {
-
   struct termios options; // struct to hold options
   tcgetattr(arduino, &options); // associate with this fd
   cfsetispeed(&options, 9600); // set input baud rate
@@ -35,29 +36,32 @@ int open_device() {
   return open(DEVICE, O_RDWR);
 }
 
-void send_to_pebble(char* msg) {
+/*void send_to_pebble(char* msg) { */
+  /*struct sockaddr_in server_addr;*/
+  /*server_addr.sin_port = htons(CLIENT_PORT); // specify port number*/
 
-  server_addr.sin_port = htons(3001); // specify port number
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY; 
-  bzero(&(server_addr.sin_zero),8); 
+  /*// specify IP address TODO: this should not be hard coded*/
+  /*if(inet_pton(AF_INET, "0.0.0.0", &server_addr.sin_addr) <= 0) { */
+    /*perror("inet_pton"); */
+    /*exit(1); */
+  /*} */
 
-  // open connectino to pebble
-  int fd = connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr));
-  if (fd == -1) {
-    perror("connect");
-    exit(1);
-  } 
+  /*// estabish connectio with IP address through socket*/
+  /*if (connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {*/
+    /*perror("connect");*/
+    /*exit(1);*/
+  /*} */
 
-  send(fd, msg, strlen(msg), 0);
-  close(fd);
-}
+  /*send(sock, msg, strlen(msg), 0);*/
+  /*close(sock);*/
+/*}*/
 
 void read_message(int arduino, char *buff) {
 
   // int newline_count = 0;
   int total_bytes = 0;
 
+  // currentely have connection with Arduino
   int connection = 1;
 
   // clear local_temp buff
@@ -66,24 +70,29 @@ void read_message(int arduino, char *buff) {
   //Do not exceed reading longer than the length of the msg
   while(!total_bytes || buff[total_bytes - 1] != '\n') {
     if (connection) {
+
       //Read only one byte at a time and only execute block if a byte is received
       int bytes_read = read(arduino, &buff[total_bytes], 1);
       if (bytes_read == -1) { 
         connection = 0;
         char* msg = "\n* Lost connection with Arduino. *\n";
         puts(msg);
-        send_to_pebble(msg);
+        /*send_to_pebble(msg);*/
       } else {
         connection = 1;
         total_bytes += bytes_read;
       }
     } else {
+
+      // try to reopen connection with Arduino
       arduino = open_device();
-      if (arduino != -1) {
+
+      // successful?
+      if (arduino != -1) { 
         connection = 1;
         char* msg = "\n* Regained connection. *\n";
         puts(msg);
-        send_to_pebble(msg);
+        /*send_to_pebble(msg);*/
       }
     }
   }
@@ -91,10 +100,13 @@ void read_message(int arduino, char *buff) {
 
 void* listen_to_arduino(void* _) {
 
-  // configure connection to Arduino
+  /*
+   * configure connection to Arduino
+   * */
 
   //Specific to computer and arduino device
   arduino = open_device();
+  sock = get_socket(CLIENT_PORT); 
 
   //Exits thread if there was an issue
   if(arduino == -1) {
@@ -107,13 +119,15 @@ void* listen_to_arduino(void* _) {
   int num = 0; // for computing average
   char buff [BUFF_SIZE]; // holds strings read from Arduino
   tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
-  int lost_connection = 0;
   while(1) {
-    // pull data from Arduino and enqueue
-    // save string from Ardunito to buff
+
+    /*
+     * pull data from Arduino and enqueue 
+     * save string from Ardunito to buff
+     * */
+
     read_message(arduino, buff); 
-    float temp;
-    char msg;
+    float temp; // can't declare variables in switch
     switch (buff[0]) {
       case 't': // temp
         temp = atof(buff + 3);
@@ -130,7 +144,7 @@ void* listen_to_arduino(void* _) {
         fflush(stdout);
         break;
       case 'a': 
-        send_to_pebble(buff);
+        /*send_to_pebble(buff);*/
       case 'r': // received message
         pthread_mutex_lock(&lock);
         received = 1;
