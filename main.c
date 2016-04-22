@@ -7,16 +7,22 @@ http://www.binarii.com/files/papers/c_sockets.txt
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <strings.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "listen-to-pebble.h"
 #include "listen-to-arduino.h"
+#include "server.h"
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-float average = 0;
-float min, max, latest;
-int arduino;
-int sock;
-int received;
 
+// track temperature data
+float average = 0; 
+float min, max;
+
+int received; // flag for relaying Arduino's message confirmation
+int arduino; // fd for arduino
 
 int error() { 
   return -1;

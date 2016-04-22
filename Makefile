@@ -1,9 +1,9 @@
 CC = clang
 
 all: clean
-	$(CC) -g -o server main.c listen-to-arduino.c listen-to-pebble.c queue.c
-	#valgrind --leak-check=full ./server $(SERVER)
-	./server $(SERVER)
+	$(CC) -g -o exe main.c listen-to-arduino.c listen-to-pebble.c server.c queue.c
+	#valgrind --leak-check=full ./exe $(SERVER)
+	./exe $(SERVER)
 
 temp:
 	$(CC) -o temperature read-temperature.c
