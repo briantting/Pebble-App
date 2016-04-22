@@ -37,31 +37,9 @@ void start_server(void *argv_void)
 {
 
   char** argv = (char**)argv_void;
+
   // structs to represent the server and client
-  /*struct sockaddr_in server_addr, client_addr;    */
   struct sockaddr_in client_addr;
-
-  // 1. socket: creates a socket descriptor that you later use to make other system calls
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    perror("Socket");
-    exit(1);
-  }
-
-
-  int reuse_addr = 1;
-  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse_addr,sizeof(int)) == -1) {
-    perror("Setsockopt");
-    exit(1);
-  }
-  
-  // configure the server
-  int PORT_NUMBER = atoi(argv[1]);
-
-  /*server_addr.sin_port = htons(PORT_NUMBER); // specify port number*/
-  /*server_addr.sin_family = AF_INET;           */
-  /*server_addr.sin_addr.s_addr = INADDR_ANY; */
-  /*bzero(&(server_addr.sin_zero),8); */
-
   
   // 2. bind: use the socket and associate it with the port number
   if (bind(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
@@ -77,7 +55,7 @@ void start_server(void *argv_void)
   }
 
   // once you get here, the server is set up and about to start listening
-  printf("\nServer configured to listen on port %d\n", PORT_NUMBER);
+  printf("\nServer configured to listen on port %d\n", atoi(argv[1]));
   
   fflush(stdout);
 }
