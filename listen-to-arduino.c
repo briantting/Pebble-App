@@ -73,7 +73,12 @@ void read_message(int arduino, char *buff) {
 
       //Read only one byte at a time and only execute block if a byte is received
       int bytes_read = read(arduino, &buff[total_bytes], 1);
+      puts("bytes_read");
+      printf("\n%d\n", bytes_read);
       if (bytes_read == -1) { 
+
+
+        printf("\nbytes_read: %d\n", bytes_read);
         connection = 0;
         char* msg = "\n* Lost connection with Arduino. *\n";
         puts(msg);
@@ -89,6 +94,8 @@ void read_message(int arduino, char *buff) {
 
       // successful?
       if (arduino != -1) { 
+        printf("\narduino: %d", arduino);
+        tcflush(arduino, TCIFLUSH); // flush waiting Arduino input
         connection = 1;
         char* msg = "\n* Regained connection. *\n";
         puts(msg);
