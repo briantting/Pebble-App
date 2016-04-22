@@ -80,11 +80,12 @@ void* listen_to_arduino(void* _) {
 
   //Specific to computer and arduino device
   arduino = open_device();
+  send_to_pebble("hello");
 
   //Exits thread if there was an issue
   if(arduino == -1) {
     char* msg = "There was a problem accessing the Arduino.";
-    send_to_pebble(msg);
+    /*send_to_pebble(msg);*/
     perror(msg);
     exit(1);  //May want to consider a non-NULL error type
   }
