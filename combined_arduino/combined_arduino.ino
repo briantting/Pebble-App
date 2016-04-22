@@ -1,9 +1,8 @@
- #include <Wire.h> 
+#include <Wire.h> 
  
 #define BAUD (9600)    /* Serial baud define */
 #define _7SEG (0x38)   /* I2C address for 7-Segment */
 #define THERM (0x49)   /* I2C address for digital thermometer */
-#define EEP (0x50)     /* I2C address for EEPROM */
 #define RED (3)        /* Red color pin of RGB LED */
 #define GREEN (5)      /* Green color pin of RGB LED */
 #define BLUE (6)       /* Blue color pin of RGB LED */
@@ -11,11 +10,6 @@
 const byte NumberLookup[16] =   {0x3F,0x06,0x5B,0x4F,0x66,
                                  0x6D,0x7D,0x07,0x7F,0x6F, 
                                  0x77,0x7C,0x39,0x5E,0x79,0x71};
-
-const int pingPin = 11;
-unsigned int duration;
-unsigned int inches;
-char alarm = 'd';
 
 /* Function prototypes */
 void Cal_temp (int&, byte&, byte&, bool&);
@@ -44,18 +38,26 @@ void setup() {
  Purpose: 
    Run-time forever loop.
 ****************************************************************************/
-void loop() { 
+void loop() {
+  // temperature
   int Decimal;
   byte Temperature_H, Temperature_L, counter, counter2;
-  bool IsPositive;
+  bool IsPositive = true;
   bool IsCelsius = true;
-  char IncomingByte;
-  
+
+  // proximity sensor
+  const int pingPin = 11;
+  unsigned int duration;
+  unsigned int inches;
+
+  // alarm
+  bool standby = false;
   bool setArm = false;
   unsigned long setArmTime;
   unsigned long setDisarmTime;
+  char alarm = 'd'; // alarm state, initialized to disarmed
 
-  bool standby = false;
+  char IncomingByte;
   
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
      and Digits 1, 2, 3 AND 4 are NOT blanked */
@@ -141,14 +143,14 @@ void loop() {
     /* Display temperature on the 7-Segment */
     if (!setArm && alarm != 't' && !standby) {
       Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, IsCelsius);
-    } else {
+    } else if (!setArm && alarm != 't' && standby) {
       Send7SEG(4,0x00);
       Send7SEG(3,0x00);
       Send7SEG(2,0x00);
       Send7SEG(1,0x00);
     }
     
-    /* Alarm Stuff */
+    /* Display alarm status on LED */
     if (alarm == 'd') {
       digitalWrite(GREEN, HIGH);
       digitalWrite(RED, LOW);
@@ -166,7 +168,8 @@ void loop() {
       digitalWrite(GREEN, LOW);
       digitalWrite(BLUE, LOW);
     }
-    
+
+    // proximity sensor sensing
     pinMode(pingPin, OUTPUT);          // Set pin to OUTPUT
     digitalWrite(pingPin, LOW);        // Ensure pin is low
     delayMicroseconds(2);
@@ -176,7 +179,8 @@ void loop() {
     pinMode(pingPin, INPUT);           // Set pin to INPUT
     duration = pulseIn(pingPin, HIGH); // Read echo pulse
     inches = duration / 74 / 2;        // Convert to inches
-    
+
+    // alarm triggering and sounding
     if (alarm != 'd') {
       if (alarm == 't') {
         Send7SEG(4,NumberLookup[0]);
@@ -258,6 +262,7 @@ void Cal_temp (int& Decimal, byte& High, byte& Low, bool& sign) {
    Display number on the 7-segment display.
 ****************************************************************************/
 void Dis_7SEG (int Decimal, byte High, byte Low, bool sign, bool IsCelsius) {
+  // Celsius to Fahrenheit conversion
   if (!IsCelsius) {
     double Temp = (High + Decimal/10000.0) * 1.8;
     if (sign == 0) {
