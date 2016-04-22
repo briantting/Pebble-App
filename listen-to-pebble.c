@@ -245,9 +245,6 @@ void* listen_to_pebble(void* argv) {
             write(arduino, signal, 1);
             if (message_received()) {
               strcat(reply, main_reply);
-              puts("reply to pebble");
-              puts(main_reply);
-              puts("end reply");
             } else {
               strcat(reply, "Lost connection with Arduino");
             }
@@ -267,8 +264,6 @@ void* listen_to_pebble(void* argv) {
         // 6. send: send the message over the socket
         // note that the second argument is a char*, and the third is the number of chars
         send(fd, reply, strlen(reply), 0);
-
-        
 
         // 7. close: close the connection
         close(fd);
