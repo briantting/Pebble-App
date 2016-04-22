@@ -18,6 +18,7 @@ extern float max, min, average;
 extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
+extern struct sockaddr_in server_addr;
 int TEMP_LENGTH = 80;
 double WAIT_TIME = 5;
 char reply[MSG_SIZE];
@@ -37,7 +38,8 @@ void start_server(void *argv_void)
 
   char** argv = (char**)argv_void;
   // structs to represent the server and client
-  struct sockaddr_in server_addr,client_addr;    
+  /*struct sockaddr_in server_addr, client_addr;    */
+  struct sockaddr_in client_addr;
 
   // 1. socket: creates a socket descriptor that you later use to make other system calls
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -55,10 +57,10 @@ void start_server(void *argv_void)
   // configure the server
   int PORT_NUMBER = atoi(argv[1]);
 
-  server_addr.sin_port = htons(PORT_NUMBER); // specify port number
-  server_addr.sin_family = AF_INET;           
-  server_addr.sin_addr.s_addr = INADDR_ANY; 
-  bzero(&(server_addr.sin_zero),8); 
+  /*server_addr.sin_port = htons(PORT_NUMBER); // specify port number*/
+  /*server_addr.sin_family = AF_INET;           */
+  /*server_addr.sin_addr.s_addr = INADDR_ANY; */
+  /*bzero(&(server_addr.sin_zero),8); */
 
   
   // 2. bind: use the socket and associate it with the port number
@@ -87,7 +89,8 @@ void start_server(void *argv_void)
 */
 void* listen_to_pebble(void* argv) {
   bool isCelsius = true; //handles which mode the temperature is in. Default is Celsius
-  struct sockaddr_in server_addr,client_addr; 
+  /*struct sockaddr_in server_addr,client_addr; */
+  struct sockaddr_in client_addr; 
   int fd = -1;
   fd_set set;
 
@@ -246,7 +249,7 @@ void* listen_to_pebble(void* argv) {
 
         } else {
           strcat(reply, "no message received from pebble");
-          
+
         }
         puts("REPLY:");
         puts(reply);
@@ -257,7 +260,7 @@ void* listen_to_pebble(void* argv) {
         // note that the second argument is a char*, and the third is the number of chars
         send(fd, reply, strlen(reply), 0);
 
-        
+
 
         // 7. close: close the connection
         close(fd);
