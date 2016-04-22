@@ -187,7 +187,7 @@ void* listen_to_pebble(void* argv) {
           There must be a default reply, otherwise Pebble will keep pinging.
         */
         char* begin_reply = "{\n\"name\": \"";
-        char* end_reply = "\"\n }\n";
+        char* end_reply = "\"\n}\n";
         bzero(reply, MSG_SIZE);
 
         strcat(reply, begin_reply);
@@ -259,10 +259,10 @@ void* listen_to_pebble(void* argv) {
           strcat(reply, "no message received from pebble");
           
         }
-        puts("\nREPLY:");
-        puts(reply);
 
         strcat(reply, end_reply);
+        puts("\nREPLY:");
+        puts(reply);
 
         // 6. send: send the message over the socket
         // note that the second argument is a char*, and the third is the number of chars
