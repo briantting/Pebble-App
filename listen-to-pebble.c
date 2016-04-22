@@ -14,7 +14,7 @@
 #include <time.h>
 #define MSG_SIZE 300
 extern pthread_mutex_t lock;
-extern float max, min, average;
+extern float max, min, average, latest;
 extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
@@ -170,6 +170,7 @@ void* listen_to_pebble(void* argv) {
         float temp_max = max;
         float temp_avg = average;
         float temp_min = min;
+        float temp_latest = latest;
         char *metric = "c ";
         pthread_mutex_unlock(&lock);
 
@@ -208,30 +209,40 @@ void* listen_to_pebble(void* argv) {
             } else if (strcmp(token, "/low") == 0) {
               snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_min);
               strcat(reply, metric);
+            } else if (strcmp(token, "/latest") == 0) {
+              snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_latest);
+              strcat(reply, metric);
             } else if (strcmp(token, "/ping") == 0) {
               strcat(reply, token);
             } else {
               strcat(reply, "Invalid GET request");
             }
-            
+
           } else if(strncmp(request, "POST", 3) == 0) {
             char main_reply [MSG_SIZE];
+            char signal [2];
+            signal[1] = '\0';
+
             if(strcmp(token, "/change") == 0) {
               isCelsius = !isCelsius;
-              write(arduino, "c\0", 1);
+              signal[0] = 'c';
               strcpy(main_reply, "Temp metric changed");
             } else if (strcmp(token, "/disarm") == 0) {
-              write(arduino, "d\0", 1);
+              signal[0] = 'd';
               strcpy(main_reply, "Alarm disarmed");
             } else if (strcmp(token, "/arm") == 0) {
-              write(arduino, "a\0", 1);
+              signal[0] = 'a';
               strcpy(main_reply, "Arming alarm");
-            } else if (strcmp(token, "/toggle") == 0) {
-              write(arduino, "t\0", 1);
-              strcpy(main_reply, "Display toggled");
+            } else if (strcmp(token, "/on") == 0) {
+              signal[0] = 'n';
+              strcpy(main_reply, "Turn on display");
+            } else if (strcmp(token, "/off") == 0) {
+              signal[0] = 'f';
+              strcpy(main_reply, "Turn off display");
             } else {
               strcpy(main_reply, "Invalid POST request");
             }
+            write(arduino, signal, 1);
             if (message_received()) {
               strcat(reply, main_reply);
               puts("reply to pebble");
@@ -248,7 +259,7 @@ void* listen_to_pebble(void* argv) {
           strcat(reply, "no message received from pebble");
           
         }
-        puts("REPLY:");
+        puts("\nREPLY:");
         puts(reply);
 
         strcat(reply, end_reply);

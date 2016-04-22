@@ -14,7 +14,7 @@
 #define TEMP_MSG_LENGTH 100
 #define SIZE_OF_QUEUE 36000
 
-extern float average, min, max;
+extern float average, min, max, latest;
 extern pthread_mutex_t lock;
 extern int arduino;
 extern int sock;
@@ -77,6 +77,7 @@ void* listen_to_arduino(void* _) {
         // update min, max, and average
         num++;
         pthread_mutex_lock(&lock);
+        latest = temp;
         get_extrema(q, &min, &max); // get min and max values in queue
         average = (average * (num - 1) + temp) / num; // update average
         pthread_mutex_unlock(&lock);
