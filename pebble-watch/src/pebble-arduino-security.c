@@ -10,6 +10,7 @@ bool is_armed = false;
 
 
 void arm_countdown(void *something) {
+	printf("arm countdown: %d\n", heap_bytes_used());
 	snprintf(security_buff, sizeof(security_buff), "%d", time_remaining);
   text_layer_set_text(count_down_text_layer, security_buff);
   time_remaining -= 1;
@@ -23,6 +24,8 @@ void arm_countdown(void *something) {
   	time_remaining = RESET_ALARM;
 
 	}
+		printf("arm countdown: %d\n", heap_bytes_used());
+
 }
 
 void security_config_provider(void *context) {
@@ -33,6 +36,7 @@ void security_config_provider(void *context) {
 
 /* This is called when the up button is clicked */
 void security_up_click_handler(ClickRecognizerRef recognizer, void *context) {
+	printf("security up button: %d\n", heap_bytes_used());
   if(!is_armed) {
   	is_armed = true;
   	DictionaryIterator *iter;
@@ -44,6 +48,8 @@ void security_up_click_handler(ClickRecognizerRef recognizer, void *context) {
 	  app_message_outbox_send();
 	  arm_countdown(NULL);
   }
+  	printf("security up button: %d\n", heap_bytes_used());
+
   
 }
 
@@ -60,13 +66,15 @@ void security_down_click_handler(ClickRecognizerRef recognizer, void *context) {
   	app_timer_cancel(countdown);
   	text_layer_set_text(count_down_text_layer, "");
   	time_remaining = RESET_ALARM;
-  	is_armed = false;	
+  	
   }
+  is_armed = false;	
   
 }
 
 
 void security_window_load(Window *window) {
+	printf("security window load: %d\n", heap_bytes_used());
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
   arm_text_layer = text_layer_create(GRect(0, 10, bounds.size.w, 20));
@@ -84,10 +92,22 @@ void security_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(arm_text_layer));
   layer_add_child(window_layer, text_layer_get_layer(disarm_text_layer));
   layer_add_child(window_layer, text_layer_get_layer(count_down_text_layer));
+  printf("security window load: %d\n", heap_bytes_used());
+
 }
 
 void security_window_unload(Window *window) {
+  printf("security window unload: %d\n", heap_bytes_used());
   text_layer_destroy(arm_text_layer);
   text_layer_destroy(disarm_text_layer);
   text_layer_destroy(count_down_text_layer);
+  DictionaryIterator *iter;
+	app_message_outbox_begin(&iter);
+  int key = 0;
+  // send the message "hello?" to the phone, using key #0
+  Tuplet value = TupletCString(key, "on");
+  dict_write_tuplet(iter, &value);
+  app_message_outbox_send();
+  printf("security window unload: %d\n", heap_bytes_used());
+
 }

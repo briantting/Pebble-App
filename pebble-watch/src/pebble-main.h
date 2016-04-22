@@ -21,6 +21,9 @@ void main_config_provider(void *context);
 static void main_window_load(Window *window);
 static void main_window_unload(Window *window);
 
+static void temp_window_load(Window *window);
+static void temp_window_unload(Window *window);
+
 static void init(void);
 static void deinit(void);
 
