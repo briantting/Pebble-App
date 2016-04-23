@@ -12,8 +12,10 @@ http://www.binarii.com/files/papers/c_sockets.txt
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 float average = 0;
-float min, max;
+float min, max, latest;
 int arduino;
+int sock;
+int received;
 
 
 int error() { 
