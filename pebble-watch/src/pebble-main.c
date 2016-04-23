@@ -13,6 +13,7 @@ TextLayer *main_text_layer, *msg_received_text_layer, *security_button_text,
 	*temperature_button_text, *toggle_button_text, *degree_layer;
 char msg[200];
 bool sent_msg = false;
+int count = 0;
 AppTimer *app_timer;
 
 /* 
@@ -57,6 +58,7 @@ void exit_message() {
 /* Record that a message was successfully sent*/
 void out_sent_handler(DictionaryIterator *sent, void *context) {
   // outgoing message was delivered
+  printf("Out sent success \n");
   sent_msg = true;
 }
 
@@ -68,7 +70,7 @@ void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, voi
 
 /* Handles incoming messages to the pebble watch */
 void in_received_handler(DictionaryIterator *received, void *context) {
-
+	printf("In received handler \n");
   //Creates a temporary window to display a message from sender
   temp_window = window_create();
   window_set_window_handlers(temp_window, (WindowHandlers) { 
@@ -81,6 +83,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   Tuple *server_tuple = dict_find(received, server_key);
 
   if (server_tuple) {
+  	count = 0;
   	sent_msg = false;
   	Layer *window_layer = window_get_root_layer(temp_window);
   	window_stack_push(temp_window, true);
@@ -114,13 +117,20 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     
     layer_add_child(window_layer, text_layer_get_layer(msg_received_text_layer));
   	
-  	app_timer = app_timer_register(4000, clear_recevied_message, NULL);
+  	app_timer = app_timer_register(2000, clear_recevied_message, NULL);
 
   } 
   else {
   	//A message was sent, but none were received. Lost connection with server. 
   	if(sent_msg) {
-  		exit_message();
+  		if(count < 1000) {
+  			exit_message();
+  		} else {
+  			count += 1;
+  			printf("%d", count);
+  		}
+
+  		
   		
   	}
 
@@ -222,7 +232,6 @@ static void temp_window_unload(Window *window) {
 }
 
 static void main_window_load(Window *window) {
-	printf("main window load: %d\n", heap_bytes_used());
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
   security_button_text = text_layer_create(GRect(0,10,bounds.size.w - 5, 20));
@@ -246,22 +255,24 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(security_button_text));
   layer_add_child(window_layer, text_layer_get_layer(temperature_button_text));
   layer_add_child(window_layer, text_layer_get_layer(toggle_button_text));
-  printf("main window load: %d\n", heap_bytes_used());
+ //    DictionaryIterator *iter;
+	// app_message_outbox_begin(&iter);
+ //  int key = 0;
+ //  Tuplet value = TupletCString(key, "on");
+ //  dict_write_tuplet(iter, &value);
+ //  app_message_outbox_send();
 
 }
 
 static void main_window_unload(Window *window) {
-  printf("main window unload: %d\n", heap_bytes_used());
   text_layer_destroy(temperature_button_text);
   text_layer_destroy(security_button_text);
   text_layer_destroy(main_text_layer);
   text_layer_destroy(toggle_button_text);
-  printf("main window unload: %d\n", heap_bytes_used());
 
 }
 
 static void init(void) {
-	printf("init: %d\n", heap_bytes_used());
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) { 
   		.load = main_window_load, 
@@ -283,18 +294,17 @@ static void init(void) {
   
   const bool animated = true;
   window_stack_push(window, animated);
-  printf("init: %d\n", heap_bytes_used());
+
+
 }
 
 /* Destroys all windows as program closes */
 static void deinit(void) {
-		printf("%d", heap_bytes_used());
   	window_destroy(window);
   	window_destroy(temperature_window);
   	window_destroy(temp_window);
   	window_destroy(security_window);
   	app_message_deregister_callbacks();
-		printf("%d", heap_bytes_used());
   
 }
 

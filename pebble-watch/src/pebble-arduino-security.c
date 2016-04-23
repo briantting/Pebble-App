@@ -104,7 +104,6 @@ void security_window_unload(Window *window) {
   DictionaryIterator *iter;
 	app_message_outbox_begin(&iter);
   int key = 0;
-  // send the message "hello?" to the phone, using key #0
   Tuplet value = TupletCString(key, "on");
   dict_write_tuplet(iter, &value);
   app_message_outbox_send();

@@ -28,7 +28,7 @@ function sendToServer(request) {
   if(request.localeCompare("change") == 0 || request.localeCompare("read_temp") == 0 ||
   	request.localeCompare("arm") == 0 || request.localeCompare("disarm") == 0 || 
   	request.localeCompare("on") == 0 || request.localeCompare("off") == 0) {
-  	method = "POST";
+  		method = "POST";
   }
 
   req.onload = function(e) {
