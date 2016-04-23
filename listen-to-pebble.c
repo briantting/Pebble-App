@@ -12,17 +12,15 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <time.h>
-#include "listen-to-pebble.h"
-#include "server.h"
- 
 #define MSG_SIZE 300
 extern pthread_mutex_t lock;
 extern float max, min, average, latest;
 extern int arduino;
 extern int received;
-int SERVER_PORT = 3002;
+int SERVER_PORT = 3001;
+int sock; // socket descriptor
 int TEMP_LENGTH = 80;
-double WAIT_TIME = 5;
+double WAIT_TIME = 1;
 char reply[MSG_SIZE];
 
 int message_received() {
@@ -35,16 +33,36 @@ int message_received() {
   return ret_val;
 }
 
-void configure_server(int sock) {
+void start_server()
+{
+
+
+  // creates a socket descriptor that you later use to make other system calls
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror("Socket");
+    exit(1);
+  }
+
 
   // structs to represent the server and client
   struct sockaddr_in server_addr;
+  bzero(&server_addr, sizeof(server_addr));
+  server_addr.sin_port = htons(SERVER_PORT); // specify port number
+  server_addr.sin_family = AF_INET;           
+  server_addr.sin_addr.s_addr = INADDR_ANY; 
+  bzero(&(server_addr.sin_zero), sizeof(server_addr.sin_zero)); 
 
-  // specify port number
-  server_addr.sin_port = htons(SERVER_PORT); 
+  int reuse_addr = 1;
+  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse_addr,sizeof(int)) == -1) {
+    perror("Setsockopt");
+    exit(1);
+  }
 
+  
   // 2. bind: use the socket and associate it with the port number
-  if (bind(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+  if (bind(sock, 
+          (struct sockaddr *)&server_addr,
+          sizeof(struct sockaddr)) == -1) {
     perror("Unable to bind");
     exit(1);
   }
@@ -58,6 +76,7 @@ void configure_server(int sock) {
 
   // once you get here, the server is set up and about to start listening
   printf("\nServer configured to listen on port %d\n", SERVER_PORT);
+  
   fflush(stdout);
 }
 
@@ -68,14 +87,15 @@ void configure_server(int sock) {
 */
 void* listen_to_pebble(void* argv) {
   bool isCelsius = true; //handles which mode the temperature is in. Default is Celsius
-  struct sockaddr_in client_addr; 
+  struct sockaddr_in server_addr,client_addr; 
   int fd = -1;
   fd_set set;
 
-  // set up server
-  int port_number = atoi(((char**) argv)[1]);
-  int sock = get_socket(SERVER_PORT);
-  configure_server(sock);
+  /* 
+    Initializes the server.
+    Returns the location of the sock.
+  */
+  start_server();
 
   /*
     Continously waits for Pebble message using select.
@@ -234,7 +254,7 @@ void* listen_to_pebble(void* argv) {
 
         } else {
           strcat(reply, "no message received from pebble");
-
+          
         }
 
         strcat(reply, end_reply);

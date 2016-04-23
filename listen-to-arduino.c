@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <pthread.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -22,8 +23,9 @@ extern pthread_mutex_t lock;
 extern int arduino;
 extern int received;
 
-int sock;
+/*int sock;*/
 int CLIENT_PORT = 8000;
+char* HOST = "localhost";
 char* DEVICE = "/dev/cu.usbmodem1411";
 double TEMP_TIME_INTERVAL = 2;
 
@@ -37,24 +39,49 @@ int open_device() {
 }
 
 void send_to_pebble(char* msg) { 
-  sock = get_socket(CLIENT_PORT); 
+
+  /* Create a socket point */
+  /*int sock = get_socket(CLIENT_PORT, &server_addr);*/
+  int sock;
+
+  // creates a socket descriptor that you later use to make other system calls
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    perror("Socket");
+    exit(1);
+  }
+
   struct sockaddr_in server_addr;
-  server_addr.sin_port = htons(CLIENT_PORT); // specify port number
+  bzero(&server_addr, sizeof(server_addr));
+  server_addr.sin_port = htons(CLIENT_PORT);
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_addr.s_addr = INADDR_ANY; 
+  bzero(&(server_addr.sin_zero), sizeof(server_addr.sin_zero)); 
 
-  // specify IP address TODO: this should not be hard coded
-  if(inet_pton(AF_INET, "0.0.0.0", &server_addr.sin_addr) <= 0) { 
-    perror("inet_pton"); 
-    exit(1); 
-  } 
+  int reuse_addr = 1;
+  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse_addr,sizeof(int)) == -1) {
+    perror("Setsockopt");
+    exit(1);
+  }
 
-  // estabish connectio with IP address through socket
-  if (connect(sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+  struct hostent* server = gethostbyname(HOST);
+
+  if (server == NULL) {
+    perror("gethostbyname");
+    exit(0);
+  }
+
+  bcopy((char *)server->h_addr, 
+        (char *)&server_addr.sin_addr.s_addr, 
+        server->h_length);
+
+  /* Now connect to the server */
+  if (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
     perror("connect");
     exit(1);
-  } 
-
+  }
+  
+  /* Send message to the server */
   send(sock, msg, strlen(msg), 0);
-  close(sock);
 }
 
 void read_message(int arduino, char *buff) {
@@ -80,12 +107,12 @@ void* listen_to_arduino(void* _) {
 
   //Specific to computer and arduino device
   arduino = open_device();
-  send_to_pebble("hello");
+    send_to_pebble("hello from listen to Arduino");
 
   //Exits thread if there was an issue
   if(arduino == -1) {
     char* msg = "There was a problem accessing the Arduino.";
-    /*send_to_pebble(msg);*/
+    send_to_pebble(msg);
     perror(msg);
     exit(1);  //May want to consider a non-NULL error type
   }

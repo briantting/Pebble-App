@@ -5,6 +5,10 @@ all: clean
 	#valgrind --leak-check=full ./exe $(SERVER)
 	./exe $(SERVER)
 
+test:
+	$(CC) -g -o test server_test.c
+	./test $(HOST) $(PORT)
+
 temp:
 	$(CC) -o temperature read-temperature.c
 	./temperature
@@ -20,3 +24,5 @@ q: clean
 
 clean: 
 	rm -rf server temperature heap-tester *.o
+
+.PHONY: all test clean
