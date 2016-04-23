@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <time.h>
+#include "server.h"
 #define MSG_SIZE 300
 extern pthread_mutex_t lock;
 extern float max, min, average, latest;
@@ -38,27 +39,9 @@ void start_server()
 
 
   // creates a socket descriptor that you later use to make other system calls
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    perror("Socket");
-    exit(1);
-  }
-
-
-  // structs to represent the server and client
   struct sockaddr_in server_addr;
-  bzero(&server_addr, sizeof(server_addr));
-  server_addr.sin_port = htons(SERVER_PORT); // specify port number
-  server_addr.sin_family = AF_INET;           
-  server_addr.sin_addr.s_addr = INADDR_ANY; 
-  bzero(&(server_addr.sin_zero), sizeof(server_addr.sin_zero)); 
+  sock = get_socket(SERVER_PORT, &server_addr);
 
-  int reuse_addr = 1;
-  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse_addr,sizeof(int)) == -1) {
-    perror("Setsockopt");
-    exit(1);
-  }
-
-  
   // 2. bind: use the socket and associate it with the port number
   if (bind(sock, 
           (struct sockaddr *)&server_addr,

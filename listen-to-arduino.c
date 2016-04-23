@@ -41,27 +41,8 @@ int open_device() {
 void send_to_pebble(char* msg) { 
 
   /* Create a socket point */
-  /*int sock = get_socket(CLIENT_PORT, &server_addr);*/
-  int sock;
-
-  // creates a socket descriptor that you later use to make other system calls
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    perror("Socket");
-    exit(1);
-  }
-
   struct sockaddr_in server_addr;
-  bzero(&server_addr, sizeof(server_addr));
-  server_addr.sin_port = htons(CLIENT_PORT);
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY; 
-  bzero(&(server_addr.sin_zero), sizeof(server_addr.sin_zero)); 
-
-  int reuse_addr = 1;
-  if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&reuse_addr,sizeof(int)) == -1) {
-    perror("Setsockopt");
-    exit(1);
-  }
+  int sock = get_socket(CLIENT_PORT, &server_addr);
 
   struct hostent* server = gethostbyname(HOST);
 
