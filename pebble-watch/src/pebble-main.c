@@ -156,13 +156,13 @@ void main_up_click_handler(ClickRecognizerRef recognizer, void *context) {
   });
 	window_set_click_config_provider(security_window, security_config_provider);
 	window_stack_push(security_window, true);
-	DictionaryIterator *iter;
-	app_message_outbox_begin(&iter);
-  int key = 0;
-  // send the message "hello?" to the phone, using key #0
-  Tuplet value = TupletCString(key, "off");
-  dict_write_tuplet(iter, &value);
-  app_message_outbox_send();
+	// DictionaryIterator *iter;
+	// app_message_outbox_begin(&iter);
+ //  int key = 0;
+ //  // send the message "hello?" to the phone, using key #0
+ //  Tuplet value = TupletCString(key, "off");
+ //  dict_write_tuplet(iter, &value);
+ //  app_message_outbox_send();
   printf("main up button: %d\n", heap_bytes_used());
 
 }
@@ -203,12 +203,34 @@ void tap_handler(AccelAxisType axis, int32_t direction) {
 
 }
 
+void long_up_click_handler(ClickRecognizerRef recognizer, void *context) {
+	DictionaryIterator *iter;
+	app_message_outbox_begin(&iter);
+  int key = 0;
+  // send the message "hello?" to the phone, using key #0
+  Tuplet value = TupletCString(key, "on");
+  dict_write_tuplet(iter, &value);
+  app_message_outbox_send();
+}
+
+void long_down_click_handler(ClickRecognizerRef recognizer, void *context) {
+	DictionaryIterator *iter;
+	app_message_outbox_begin(&iter);
+  int key = 0;
+  // send the message "hello?" to the phone, using key #0
+  Tuplet value = TupletCString(key, "off");
+  dict_write_tuplet(iter, &value);
+  app_message_outbox_send();
+}
+
 
 /* this registers the appropriate function to the appropriate button */
 void main_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, main_select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, main_up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, main_down_click_handler);
+  window_long_click_subscribe(BUTTON_ID_UP, 700, long_up_click_handler, NULL);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 700, long_down_click_handler, NULL);
 }
 
 static void temp_window_load(Window *window) {

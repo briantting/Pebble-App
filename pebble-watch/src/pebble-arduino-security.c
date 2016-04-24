@@ -101,12 +101,12 @@ void security_window_unload(Window *window) {
   text_layer_destroy(arm_text_layer);
   text_layer_destroy(disarm_text_layer);
   text_layer_destroy(count_down_text_layer);
-  DictionaryIterator *iter;
-	app_message_outbox_begin(&iter);
-  int key = 0;
-  Tuplet value = TupletCString(key, "on");
-  dict_write_tuplet(iter, &value);
-  app_message_outbox_send();
+ //  DictionaryIterator *iter;
+	// app_message_outbox_begin(&iter);
+ //  int key = 0;
+ //  Tuplet value = TupletCString(key, "on");
+ //  dict_write_tuplet(iter, &value);
+ //  app_message_outbox_send();
   printf("security window unload: %d\n", heap_bytes_used());
 
 }
