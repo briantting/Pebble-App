@@ -23,9 +23,8 @@ extern pthread_mutex_t lock;
 extern int arduino;
 extern int received;
 
-/*int sock;*/
-int CLIENT_PORT = 8000;
-char* HOST = "localhost";
+int CLIENT_PORT = 3001;
+char* HOST = "158.130.107.39";
 char* DEVICE = "/dev/cu.usbmodem1411";
 double TEMP_TIME_INTERVAL = 2;
 
@@ -44,7 +43,10 @@ void send_to_pebble(char* msg) {
   struct sockaddr_in server_addr;
   int sock = get_socket(CLIENT_PORT, &server_addr);
 
-  struct hostent* server = gethostbyname(HOST);
+  struct in_addr addr;
+  inet_pton(AF_INET, HOST, &addr);
+  /*struct hostent* server = gethostbyname(HOST);*/
+  struct hostent* server = gethostbyaddr(&addr, sizeof(addr), AF_INET);
 
   if (server == NULL) {
     perror("gethostbyname");

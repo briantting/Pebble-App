@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
 
   puts("Enter 'q' at any time to quit.");
   pthread_t t1, t2;
-  /*if (pthread_create(&t1, NULL, listen_to_arduino, argv) != 0) {*/
-    /*return error(); */
-  /*}*/
+  if (pthread_create(&t1, NULL, listen_to_arduino, argv) != 0) {
+    return error(); 
+  }
   /*if (pthread_join(t1, NULL) != 0) { */
     /*return error(); */
   /*} */
