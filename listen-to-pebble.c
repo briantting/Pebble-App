@@ -179,6 +179,7 @@ void* listen_to_pebble(void* argv) {
           temp_max = temp_max * 1.8 + 32;
           temp_min = temp_min * 1.8 + 32;
           temp_avg = temp_avg * 1.8 + 32;
+          temp_latest = temp_latest * 1.8 + 32;
           metric = "f ";
         }
 
@@ -259,10 +260,12 @@ void* listen_to_pebble(void* argv) {
           strcat(reply, "no message received from pebble");
           
         }
-        puts("\nREPLY:");
-        puts(reply);
+        
 
         strcat(reply, end_reply);
+
+        puts("\nREPLY:");
+        puts(reply);
 
         // 6. send: send the message over the socket
         // note that the second argument is a char*, and the third is the number of chars
