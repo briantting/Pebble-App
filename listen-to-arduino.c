@@ -76,7 +76,13 @@ void read_message(int arduino, char *buff) {
   //Do not exceed reading longer than the length of the msg
   while(!total_bytes || buff[total_bytes - 1] != '\n') {
     //Read only one byte at a time and only execute block if a byte is received
-    total_bytes += read(arduino, &buff[total_bytes], 1);
+    int bytes_read = read(arduino, &buff[total_bytes], 1);
+    if (bytes_read == -1) {
+      char* msg = "Lost connection with Arduino";
+      perror(msg);
+      send_to_pebble(msg);
+    }
+    total_bytes += bytes_read;
   }
 }
 
@@ -88,7 +94,6 @@ void* listen_to_arduino(void* _) {
 
   //Specific to computer and arduino device
   arduino = open_device();
-    send_to_pebble("hello from listen to Arduino");
 
   //Exits thread if there was an issue
   if(arduino == -1) {
@@ -125,7 +130,7 @@ void* listen_to_arduino(void* _) {
         fflush(stdout);
         break;
       case 'a': 
-        /*send_to_pebble(buff);*/
+        send_to_pebble(buff);
       case 'r': // received message
         pthread_mutex_lock(&lock);
         received = 1;

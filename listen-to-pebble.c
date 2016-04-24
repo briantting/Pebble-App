@@ -34,15 +34,13 @@ int message_received() {
   return ret_val;
 }
 
-void start_server()
-{
-
+void start_server() {
 
   // creates a socket descriptor that you later use to make other system calls
   struct sockaddr_in server_addr;
   sock = get_socket(SERVER_PORT, &server_addr);
 
-  // 2. bind: use the socket and associate it with the port number
+  // use the socket and associate it with the port number
   if (bind(sock, 
           (struct sockaddr *)&server_addr,
           sizeof(struct sockaddr)) == -1) {
@@ -50,7 +48,7 @@ void start_server()
     exit(1);
   }
 
-  // 3. listen: indicates that we want to listen to the port to which we bound; 
+  // indicate that we want to listen to the bound port;
   // second arg is number of allowed connections
   if (listen(sock, 5) == -1) { // 2nd arg is 5 in original
     perror("Listen");
@@ -59,7 +57,6 @@ void start_server()
 
   // once you get here, the server is set up and about to start listening
   printf("\nServer configured to listen on port %d\n", SERVER_PORT);
-  
   fflush(stdout);
 }
 
@@ -124,9 +121,9 @@ void* listen_to_pebble(void* argv) {
         char msg [2] = {buff[0], '\0'};
         write(arduino, msg, 1); 
         if (message_received()) {
-          puts("Arduino received message.");
+          puts("\nArduino received message.");
         } else {
-          puts("No response from Arduino.");
+          puts("\nNo response from Arduino.");
         }
       }
     } else {
@@ -146,7 +143,7 @@ void* listen_to_pebble(void* argv) {
         request[bytes_received] = '\0';
 
         printf("Here comes the message:\n");
-        printf("%s\n", request);
+        puts(request);
 
 
         pthread_mutex_lock(&lock);
