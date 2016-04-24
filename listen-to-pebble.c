@@ -19,12 +19,13 @@ extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
 int TEMP_LENGTH = 80;
-double WAIT_TIME = 1;
+double WAIT_TIME = .01;
 char reply[MSG_SIZE];
 
 int message_received() {
   time_t tick = time(NULL);
   while (!received && difftime(time(NULL), tick) < WAIT_TIME);
+  printf("Received: %d\n", received);
   int ret_val = received;
   pthread_mutex_lock(&lock);
   received = 0;
@@ -162,10 +163,6 @@ void* listen_to_pebble(void* argv) {
         // null-terminate the string
         request[bytes_received] = '\0';
 
-        printf("Here comes the message:\n");
-        printf("%s\n", request);
-
-
         pthread_mutex_lock(&lock);
         float temp_max = max;
         float temp_avg = average;
@@ -195,6 +192,7 @@ void* listen_to_pebble(void* argv) {
         char *command = strdup(request);
         char *token = strsep(&command, " ");
         token = strsep(&command, " ");
+        int print_communication = 1;
 
         if(strlen(request) != 0) {
           if(strncmp(request, "GET", 3) == 0) {
@@ -214,6 +212,7 @@ void* listen_to_pebble(void* argv) {
               strcat(reply, metric);
             } else if (strcmp(token, "/ping") == 0) {
               strcat(reply, token);
+              print_communication = 0;
             } else {
               strcat(reply, "Invalid GET request");
             }
@@ -258,8 +257,13 @@ void* listen_to_pebble(void* argv) {
         }
 
         strcat(reply, end_reply);
-        puts("\nREPLY:");
-        puts(reply);
+        if (print_communication) {
+          printf("Here comes the message:\n");
+          printf("%s\n", request);
+          puts("\nREPLY:");
+          puts(reply);
+          print_communication = 1;
+        }
 
         // 6. send: send the message over the socket
         // note that the second argument is a char*, and the third is the number of chars
