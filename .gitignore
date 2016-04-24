@@ -13,3 +13,11 @@ server.h
 listen-to-pebble.o
 *.DS_Store
 server.dSYM
+exe
+exe.dSYM
+exe.dSYM
+heap-tester.dSYM
+main.dSYM
+q-tester.dSYM
+server.dSYM
+test.dSYM
