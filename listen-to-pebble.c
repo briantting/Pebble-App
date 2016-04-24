@@ -176,6 +176,7 @@ void* listen_to_pebble(void* argv) {
           temp_max = temp_max * 1.8 + 32;
           temp_min = temp_min * 1.8 + 32;
           temp_avg = temp_avg * 1.8 + 32;
+          temp_latest = temp_latest * 1.8 + 32;
           metric = "f ";
         }
 

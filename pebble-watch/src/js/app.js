@@ -19,17 +19,17 @@ Pebble.addEventListener("appmessage",
 
 function sendToServer(request) {
   var req = new XMLHttpRequest();
-  var ipAddress = "130.91.190.135"; // Hard coded IP address "192.168.1.151"
+  var ipAddress = "192.168.1.151"; // Hard coded IP address "192.168.1.151"
   var port = "3001"; // Same port specified as argument to server
   var url = "http://" + ipAddress + ":" + port + "/" + request;
   var method = "GET";
   var async = true;
 
-  if(request.localeCompare("change") == 0) {
-  	method = "POST";
+  if(request.localeCompare("change") == 0 || request.localeCompare("read_temp") == 0 ||
+  	request.localeCompare("arm") == 0 || request.localeCompare("disarm") == 0 || 
+  	request.localeCompare("on") == 0 || request.localeCompare("off") == 0) {
+  		method = "POST";
   }
-
-  
 
   req.onload = function(e) {
     // see what came back
@@ -49,7 +49,4 @@ function sendToServer(request) {
 
   req.open(method, url, async);
   req.send(null);
-  // count += 1
-  // Pebble.sendAppMessage({ "2": message.concat(count.toString()) });
-  //Pebble.sendAppMessage({ "0": "hello" });
 }
