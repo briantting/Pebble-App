@@ -14,7 +14,7 @@ TextLayer *main_text_layer, *msg_received_text_layer, *security_button_text,
 char msg[200];
 bool sent_msg = false;
 int count = 0;
-AppTimer *app_timer;
+AppTimer *app_timer, *ping_timer;
 
 /* 
  * * * * * * *
@@ -31,15 +31,25 @@ void exit_program(void *data) {
 	window_stack_pop_all(true);
 }
 
-/* Display Exit message and remove windows above the base window */
-void exit_message() {
-	Layer *main_window_layer = window_get_root_layer(window);
-	text_layer_set_text(main_text_layer, "Watch no longer connected to the server. Exiting program");
-	layer_add_child(main_window_layer, text_layer_get_layer(main_text_layer));
+// void ping_server(void *data) {
+// 	DictionaryIterator *iter;
+// 	app_message_outbox_begin(&iter);
+//   int key = 0;
+//   Tuplet value = TupletCString(key, "ping");
+//   dict_write_tuplet(iter, &value);
+//   app_message_outbox_send();
+//   ping_timer = app_timer_register(2000, ping_server, NULL);
+// }
 
-	//Cancel app_timer if it is already in use
+/* Remove windows above the base window and set timer to close program */
+void begin_exit() {
+		//Cancel app_timer if it is already in use
 	if(app_timer) {
   	app_timer_cancel(app_timer);
+  }
+
+  if(ping_timer) {
+  	app_timer_cancel(ping_timer);
   }
 
 	if(temperature_window) {
@@ -53,24 +63,52 @@ void exit_message() {
 	}
 	//Wait 4 seconds before actually shutting down the program
 	app_timer = app_timer_register(4000, (AppTimerCallback) exit_program, NULL);
+
 }
+
+/* Display arduino Exit message */
+void arduino_exit_message() {
+	printf("arduino exit\n");
+	Layer *main_window_layer = window_get_root_layer(window);
+	text_layer_set_text(main_text_layer, "Server no longer connected to arduino. Exiting program");
+	layer_add_child(main_window_layer, text_layer_get_layer(main_text_layer));
+	begin_exit();
+
+}
+
+/* Display server Exit message  */
+void server_exit_message() {
+	printf("server exit\n");
+	Layer *main_window_layer = window_get_root_layer(window);
+	text_layer_set_text(main_text_layer, "Watch no longer connected to the server. Exiting program");
+	layer_add_child(main_window_layer, text_layer_get_layer(main_text_layer));
+	begin_exit();
+
+}
+
+
 
 /* Record that a message was successfully sent*/
 void out_sent_handler(DictionaryIterator *sent, void *context) {
   // outgoing message was delivered
   printf("Out sent success \n");
   sent_msg = true;
+  // printf("Start Sleep\n");
+  // psleep(200);
+  // printf("End Sleep\n");
 }
 
 /* If outgoing message did not reach intended recipient, then shut down program */
 void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
   // outgoing message failed
-	exit_message();
+	server_exit_message();
 }
 
 /* Handles incoming messages to the pebble watch */
 void in_received_handler(DictionaryIterator *received, void *context) {
-	printf("In received handler \n");
+	if(sent_msg) {
+		printf("In received handler \n");
+	}
   //Creates a temporary window to display a message from sender
   temp_window = window_create();
   window_set_window_handlers(temp_window, (WindowHandlers) { 
@@ -86,34 +124,38 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   	count = 0;
   	sent_msg = false;
   	Layer *window_layer = window_get_root_layer(temp_window);
-  	window_stack_push(temp_window, true);
 
     if (server_tuple->value) {
 	    // put it in this global variable
 	    strcpy(msg, server_tuple->value->cstring);
+	    printf(msg);
     }
     else {
     	strcpy(msg, "no value!"); 
     } 
 
     if(strncmp(msg, "Alarm", 5) == 0) {
+    	window_stack_push(temp_window, true);
     	text_layer_set_text(msg_received_text_layer, msg);
     }
     //Lost connection with Arduino 
     else if(strncmp(msg, "Lost", 4) == 0) {
-    	window_stack_remove(temp_window, true);
-    	exit_message();
+    	arduino_exit_message();
     	return;
     } 
+    // else if(strncmp(msg, "/ping", 5) == 0) {
+    // 	return;
+    // }
     //Confirmed that Arduino temp display was toggled
     else if (strncmp(msg, "Display", 7) == 0) {
-    	window_stack_remove(temp_window, true);
     	return;
     } else {
+    	window_stack_push(temp_window, true);
     	text_layer_set_text(msg_received_text_layer, msg);
     	text_layer_set_text(degree_layer, "o");
     	layer_add_child(window_layer, text_layer_get_layer(degree_layer));
     }
+    
     
     layer_add_child(window_layer, text_layer_get_layer(msg_received_text_layer));
   	
@@ -123,14 +165,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   else {
   	//A message was sent, but none were received. Lost connection with server. 
   	if(sent_msg) {
-  		if(count < 1000) {
-  			exit_message();
-  		} else {
-  			count += 1;
-  			printf("%d", count);
-  		}
-
-  		
+  		server_exit_message();
   		
   	}
 
@@ -147,7 +182,6 @@ void in_dropped_handler(AppMessageResult reason, void *context) {
 
 /* This is called when the up button is clicked */
 void main_up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  printf("main up button: %d\n", heap_bytes_used());
 	
 	security_window = window_create();
   window_set_window_handlers(security_window, (WindowHandlers) { 
@@ -156,14 +190,6 @@ void main_up_click_handler(ClickRecognizerRef recognizer, void *context) {
   });
 	window_set_click_config_provider(security_window, security_config_provider);
 	window_stack_push(security_window, true);
-	// DictionaryIterator *iter;
-	// app_message_outbox_begin(&iter);
- //  int key = 0;
- //  // send the message "hello?" to the phone, using key #0
- //  Tuplet value = TupletCString(key, "off");
- //  dict_write_tuplet(iter, &value);
- //  app_message_outbox_send();
-  printf("main up button: %d\n", heap_bytes_used());
 
 }
 
@@ -196,7 +222,6 @@ void tap_handler(AccelAxisType axis, int32_t direction) {
 	DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
   int key = 0;
-  // send the message "hello?" to the phone, using key #0
   Tuplet value = TupletCString(key, "change");
   dict_write_tuplet(iter, &value);
   app_message_outbox_send();
@@ -207,7 +232,6 @@ void long_up_click_handler(ClickRecognizerRef recognizer, void *context) {
 	DictionaryIterator *iter;
 	app_message_outbox_begin(&iter);
   int key = 0;
-  // send the message "hello?" to the phone, using key #0
   Tuplet value = TupletCString(key, "on");
   dict_write_tuplet(iter, &value);
   app_message_outbox_send();
@@ -217,7 +241,6 @@ void long_down_click_handler(ClickRecognizerRef recognizer, void *context) {
 	DictionaryIterator *iter;
 	app_message_outbox_begin(&iter);
   int key = 0;
-  // send the message "hello?" to the phone, using key #0
   Tuplet value = TupletCString(key, "off");
   dict_write_tuplet(iter, &value);
   app_message_outbox_send();
@@ -277,12 +300,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(security_button_text));
   layer_add_child(window_layer, text_layer_get_layer(temperature_button_text));
   layer_add_child(window_layer, text_layer_get_layer(toggle_button_text));
- //    DictionaryIterator *iter;
-	// app_message_outbox_begin(&iter);
- //  int key = 0;
- //  Tuplet value = TupletCString(key, "on");
- //  dict_write_tuplet(iter, &value);
- //  app_message_outbox_send();
+
 
 }
 
@@ -316,6 +334,7 @@ static void init(void) {
   
   const bool animated = true;
   window_stack_push(window, animated);
+  // ping_timer = app_timer_register(2000, ping_server, NULL);
 
 
 }
