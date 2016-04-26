@@ -16,6 +16,8 @@ float min, max, latest;
 int arduino;
 int sock;
 int received;
+int connection;
+int alarm_status;
 
 
 int error() { 

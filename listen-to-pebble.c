@@ -18,20 +18,22 @@ extern float max, min, average, latest;
 extern int arduino;
 extern int sock; // socket descriptor
 extern int received;
+extern int connection;
+extern char alarm_status;
 int TEMP_LENGTH = 80;
 double WAIT_TIME = .1;
 char reply[MSG_SIZE];
 
-int message_received() {
-  time_t tick = time(NULL);
-  while (!received && difftime(time(NULL), tick) < WAIT_TIME);
-  printf("Received: %d\n", received);
-  int ret_val = received;
-  pthread_mutex_lock(&lock);
-  received = 0;
-  pthread_mutex_unlock(&lock);
-  return ret_val;
-}
+/*int message_received() {*/
+  /*time_t tick = time(NULL);*/
+  /*while (!received && difftime(time(NULL), tick) < WAIT_TIME);*/
+  /*printf("Received: %d\n", received);*/
+  /*int ret_val = received;*/
+  /*pthread_mutex_lock(&lock);*/
+  /*received = 0;*/
+  /*pthread_mutex_unlock(&lock);*/
+  /*return ret_val;*/
+/*}*/
 
 void start_server(void *argv_void)
 {
@@ -141,7 +143,7 @@ void* listen_to_pebble(void* argv) {
       if (send_message) {
         char msg [2] = {buff[0], '\0'};
         write(arduino, msg, 1); 
-        if (message_received()) {
+        if (connection) {
           puts("Arduino received message.");
         } else {
           puts("No response from Arduino.");
@@ -162,6 +164,9 @@ void* listen_to_pebble(void* argv) {
 
         // null-terminate the string
         request[bytes_received] = '\0';
+
+        printf("Here comes the message:\n");
+        printf("%s\n", request);
 
         pthread_mutex_lock(&lock);
         float temp_max = max;
@@ -196,75 +201,74 @@ void* listen_to_pebble(void* argv) {
         int print_communication = 1;
 
         if(strlen(request) != 0) {
-          if(strncmp(request, "GET", 3) == 0) {
-            char* main_reply = reply + strlen(reply);
-
-            if(strcmp(token, "/high") == 0) {
-              snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_max);
-              strcat(reply, metric);
-            } else if (strcmp(token, "/average") == 0) {
-              snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_avg);
-              strcat(reply, metric);
-            } else if (strcmp(token, "/low") == 0) {
-              snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_min);
-              strcat(reply, metric);
-            } else if (strcmp(token, "/latest") == 0) {
-              snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_latest);
-              strcat(reply, metric);
-            } else if (strcmp(token, "/ping") == 0) {
-              strcat(reply, token);
-              print_communication = 0;
-            } else {
-              strcat(reply, "Invalid GET request");
-            }
-
-          } else if(strncmp(request, "POST", 3) == 0) {
-            char main_reply [MSG_SIZE];
-            char signal [2];
-            signal[1] = '\0';
-
-            if(strcmp(token, "/change") == 0) {
-              isCelsius = !isCelsius;
-              signal[0] = 'c';
-              strcpy(main_reply, "Temp metric changed");
-            } else if (strcmp(token, "/disarm") == 0) {
-              signal[0] = 'd';
-              strcpy(main_reply, "Alarm disarmed");
-            } else if (strcmp(token, "/arm") == 0) {
-              signal[0] = 'a';
-              strcpy(main_reply, "Arming alarm");
-            } else if (strcmp(token, "/on") == 0) {
-              signal[0] = 'n';
-              strcpy(main_reply, "Turn on display");
-            } else if (strcmp(token, "/off") == 0) {
-              signal[0] = 'f';
-              strcpy(main_reply, "Turn off display");
-            } else {
-              strcpy(main_reply, "Invalid POST request");
-            }
-            write(arduino, signal, 1);
-            if (message_received()) {
-              strcat(reply, main_reply);
-            } else {
+          if (!connection) {
               strcat(reply, "Lost connection with Arduino");
-            }
           } else {
-            strcat(reply,"Only able to handle GET and POST requests");
-          }
+            if(strncmp(request, "GET", 3) == 0) {
+              char* main_reply = reply + strlen(reply);
 
+              if(strcmp(token, "/high") == 0) {
+                snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_max);
+                strcat(reply, metric);
+              } else if (strcmp(token, "/average") == 0) {
+                snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_avg);
+                strcat(reply, metric);
+              } else if (strcmp(token, "/low") == 0) {
+                snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_min);
+                strcat(reply, metric);
+              } else if (strcmp(token, "/latest") == 0) {
+                snprintf(main_reply, TEMP_LENGTH, "%5.2f", temp_latest);
+                strcat(reply, metric);
+              } else if (strcmp(token, "/alarm") == 0) {
+                snprintf(main_reply, 2, "%c", alarm_status);
+              } else if (strcmp(token, "/ping") == 0) {
+                strcat(reply, token);
+                print_communication = 0;
+              } else {
+                strcat(reply, "Invalid GET request");
+              }
+
+            } else if(strncmp(request, "POST", 3) == 0) {
+              char main_reply [MSG_SIZE];
+              char signal [2];
+              signal[1] = '\0';
+
+              if(strcmp(token, "/change") == 0) {
+                isCelsius = !isCelsius;
+                signal[0] = 'c';
+                strcpy(main_reply, "Temp metric changed");
+              } else if (strcmp(token, "/disarm") == 0) {
+                signal[0] = 'd';
+                strcpy(main_reply, "Alarm disarmed");
+              } else if (strcmp(token, "/arm") == 0) {
+                signal[0] = 'a';
+                strcpy(main_reply, "Arming alarm");
+              } else if (strcmp(token, "/on") == 0) {
+                signal[0] = 'n';
+                strcpy(main_reply, "Turn on display");
+              } else if (strcmp(token, "/off") == 0) {
+                signal[0] = 'f';
+                strcpy(main_reply, "Turn off display");
+              } else {
+                strcpy(main_reply, "Invalid POST request");
+              }
+              write(arduino, signal, 1);
+              if (connection) {
+                strcat(reply, main_reply);
+              } else {
+              }
+            } else {
+              strcat(reply,"Only able to handle GET and POST requests");
+            } 
+          }
         } else {
           strcat(reply, "no message received from pebble");
-          
         }
 
         strcat(reply, end_reply);
-        if (print_communication) {
-          printf("Here comes the message:\n");
-          printf("%s\n", request);
-          puts("\nREPLY:");
-          puts(reply);
-          print_communication = 1;
-        }
+        printf("\nConnection: %d\n", connection);
+        puts("\nREPLY:");
+        puts(reply);
 
         // 6. send: send the message over the socket
         // note that the second argument is a char*, and the third is the number of chars

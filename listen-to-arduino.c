@@ -19,6 +19,10 @@ extern pthread_mutex_t lock;
 extern int arduino;
 extern int sock;
 extern int received;
+extern int connection;
+extern char alarm_status;
+
+
 
 char test [BUFF_SIZE]; 
 double TEMP_TIME_INTERVAL = 1;
@@ -35,12 +39,12 @@ void read_message(int arduino, char *buff) {
   while(!total_bytes || buff[total_bytes - 1] != '\n') {
     //Read only one byte at a time and only execute block if a byte is received
     int bytes_read = read(arduino, &buff[total_bytes], 1);
-    /*
-    if (bytes_read == -1) {
-      perror("read");
+    if (bytes_read < 0) {
+      connection = 0;
+    } else { 
+      connection = 1;
+      total_bytes += bytes_read;
     }
-    */
-    total_bytes += bytes_read;
   }
 }
 
@@ -80,12 +84,6 @@ void* listen_to_arduino(void* _) {
         temp = atof(buff + 3);
         enqueue(q, temp);
 
-        double time_since_last = difftime(time(NULL), last_temp_transmission);
-        if (num && time_since_last > TEMP_TIME_INTERVAL) {
-          puts("\n* Missed temperature transmission from arduino. *\n");
-          fflush(stdout);
-        }
-        last_temp_transmission = time(NULL);
         // update min, max, and average
         num++;
         pthread_mutex_lock(&lock);
@@ -98,6 +96,7 @@ void* listen_to_arduino(void* _) {
         fflush(stdout);
         break;
       case 'a': 
+        alarm_status = buff[3];
         break;
       case 'r': // received message
         pthread_mutex_lock(&lock);
