@@ -101,6 +101,7 @@ void loop() {
       setArm = true;
       setArmTime = millis();
     } else if (IncomingByte == 'd') {
+      setArm = false;
       alarm = 'd';
       Serial.print("a: d\n");
     } else if (IncomingByte == 'n') {

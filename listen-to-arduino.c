@@ -34,7 +34,13 @@ void read_message(int arduino, char *buff) {
   //Do not exceed reading longer than the length of the msg
   while(!total_bytes || buff[total_bytes - 1] != '\n') {
     //Read only one byte at a time and only execute block if a byte is received
-    total_bytes += read(arduino, &buff[total_bytes], 1);
+    int bytes_read = read(arduino, &buff[total_bytes], 1);
+    /*
+    if (bytes_read == -1) {
+      perror("read");
+    }
+    */
+    total_bytes += bytes_read;
   }
 }
 
@@ -74,6 +80,12 @@ void* listen_to_arduino(void* _) {
         temp = atof(buff + 3);
         enqueue(q, temp);
 
+        double time_since_last = difftime(time(NULL), last_temp_transmission);
+        if (num && time_since_last > TEMP_TIME_INTERVAL) {
+          puts("\n* Missed temperature transmission from arduino. *\n");
+          fflush(stdout);
+        }
+        last_temp_transmission = time(NULL);
         // update min, max, and average
         num++;
         pthread_mutex_lock(&lock);
@@ -84,30 +96,9 @@ void* listen_to_arduino(void* _) {
 
         printf("."); // print dots to signify temp reading
         fflush(stdout);
-
-        if (difftime(time(NULL), last_temp_transmission) > TEMP_TIME_INTERVAL) {
-          puts("\n* Missed temperature transmission from arduino. *\n");
-          fflush(stdout);
-          /*send(sock, "", 1, 0);*/
-        }
-        
-        last_temp_transmission = time(NULL);
         break;
       case 'a': 
-        switch (buff[3]) {
-        case 'a': // armed
-          /*send(sock, buff, 1, 0);*/
-          break;
-        case 't': // triggered
-          /*send(sock, buff, 1, 0);*/
-          break;
-        case 'd': // disarmed
-          /*send(sock, buff, 1, 0);*/
-          break;
-        case 's': // sounded
-          /*send(sock, buff, 1, 0);*/
-          break;
-      }
+        break;
       case 'r': // received message
         pthread_mutex_lock(&lock);
         received = 1;
