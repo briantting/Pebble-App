@@ -17,7 +17,7 @@ int arduino;
 int sock;
 int received;
 int connection;
-int alarm_status;
+int alarm_status = 'd';
 
 
 int error() { 
