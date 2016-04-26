@@ -134,7 +134,31 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     	strcpy(msg, "no value!"); 
     } 
 
-    if(strncmp(msg, "Alarm", 5) == 0) {
+    if(strncmp(msg, "a", 1) == 0 && strlen(msg) == 1) {
+    	window_stack_push(temp_window, true);
+    	char *status = "Alarm is armed";
+    	text_layer_set_text(msg_received_text_layer, status);
+    }
+
+    else if(strncmp(msg, "d", 1) == 0 && strlen(msg) == 1) {
+    	window_stack_push(temp_window, true);
+    	char *status = "Alarm is disarmed";
+    	text_layer_set_text(msg_received_text_layer, status);
+    }
+
+    else if(strncmp(msg, "t", 1) == 0 && strlen(msg) == 1) {
+    	window_stack_push(temp_window, true);
+    	char *status = "Alarm was triggered";
+    	text_layer_set_text(msg_received_text_layer, status);
+    }
+
+    else if(strncmp(msg, "s", 1) == 0 && strlen(msg) == 1) {
+    	window_stack_push(temp_window, true);
+    	char *status = "Alarm was sounded";
+    	text_layer_set_text(msg_received_text_layer, status);
+    }
+
+    else if(strncmp(msg, "Alarm", 5) == 0) {
     	window_stack_push(temp_window, true);
     	text_layer_set_text(msg_received_text_layer, msg);
     }
