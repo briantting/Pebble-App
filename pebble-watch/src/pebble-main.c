@@ -31,15 +31,6 @@ void exit_program(void *data) {
 	window_stack_pop_all(true);
 }
 
-// void ping_server(void *data) {
-// 	DictionaryIterator *iter;
-// 	app_message_outbox_begin(&iter);
-//   int key = 0;
-//   Tuplet value = TupletCString(key, "ping");
-//   dict_write_tuplet(iter, &value);
-//   app_message_outbox_send();
-//   ping_timer = app_timer_register(2000, ping_server, NULL);
-// }
 
 /* Remove windows above the base window and set timer to close program */
 void begin_exit() {
@@ -47,11 +38,11 @@ void begin_exit() {
 	if(app_timer) {
   	app_timer_cancel(app_timer);
   }
-
+  // Cancels the ping_timer
   if(ping_timer) {
   	app_timer_cancel(ping_timer);
   }
-
+  //closes windows if initialized
 	if(temperature_window) {
 		window_stack_remove(temperature_window, true);
 	}
@@ -93,9 +84,6 @@ void out_sent_handler(DictionaryIterator *sent, void *context) {
   // outgoing message was delivered
   printf("Out sent success \n");
   sent_msg = true;
-  // printf("Start Sleep\n");
-  // psleep(200);
-  // printf("End Sleep\n");
 }
 
 /* If outgoing message did not reach intended recipient, then shut down program */
@@ -120,11 +108,12 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   int server_key = 2;
   Tuple *server_tuple = dict_find(received, server_key);
 
+  //Checks if msg was received
   if (server_tuple) {
   	count = 0;
   	sent_msg = false;
   	Layer *window_layer = window_get_root_layer(temp_window);
-
+  	//If msg is not empty
     if (server_tuple->value) {
 	    // put it in this global variable
 	    strcpy(msg, server_tuple->value->cstring);
@@ -167,9 +156,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     	arduino_exit_message();
     	return;
     } 
-    // else if(strncmp(msg, "/ping", 5) == 0) {
-    // 	return;
-    // }
+  
     //Confirmed that Arduino temp display was toggled
     else if (strncmp(msg, "Display", 7) == 0) {
     	return;
@@ -182,7 +169,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     
     
     layer_add_child(window_layer, text_layer_get_layer(msg_received_text_layer));
-  	
+  	//Close temp window
   	app_timer = app_timer_register(2000, clear_recevied_message, NULL);
 
   } 
@@ -241,6 +228,7 @@ void main_down_click_handler(ClickRecognizerRef recognizer, void *context) {
 	window_stack_push(temperature_window, true);
 }
 
+//Sets accelerometer to change temperature metric throughout app
 void tap_handler(AccelAxisType axis, int32_t direction) {
 	vibes_long_pulse();
 	DictionaryIterator *iter;
@@ -252,6 +240,7 @@ void tap_handler(AccelAxisType axis, int32_t direction) {
 
 }
 
+//Turns on the 7-segment display on arduino
 void long_up_click_handler(ClickRecognizerRef recognizer, void *context) {
 	DictionaryIterator *iter;
 	app_message_outbox_begin(&iter);
@@ -261,6 +250,7 @@ void long_up_click_handler(ClickRecognizerRef recognizer, void *context) {
   app_message_outbox_send();
 }
 
+//Turns off the 7-segment display on arduino
 void long_down_click_handler(ClickRecognizerRef recognizer, void *context) {
 	DictionaryIterator *iter;
 	app_message_outbox_begin(&iter);
@@ -280,6 +270,7 @@ void main_config_provider(void *context) {
   window_long_click_subscribe(BUTTON_ID_DOWN, 700, long_down_click_handler, NULL);
 }
 
+//Loads the temp msg window when a message is received
 static void temp_window_load(Window *window) {
 	Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
@@ -295,11 +286,14 @@ static void temp_window_load(Window *window) {
 
 }
 
+//unloads temp msg window
 static void temp_window_unload(Window *window) {
   text_layer_destroy(msg_received_text_layer);
   text_layer_destroy(degree_layer);
 }
 
+
+//Loads main window text and click handlers
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
@@ -328,6 +322,7 @@ static void main_window_load(Window *window) {
 
 }
 
+//Unloads main window
 static void main_window_unload(Window *window) {
   text_layer_destroy(temperature_button_text);
   text_layer_destroy(security_button_text);
@@ -336,6 +331,7 @@ static void main_window_unload(Window *window) {
 
 }
 
+//Called at start of program
 static void init(void) {
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) { 

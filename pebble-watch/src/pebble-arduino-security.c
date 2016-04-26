@@ -10,7 +10,6 @@ bool is_armed = false;
 
 
 void arm_countdown(void *something) {
-	printf("arm countdown: %d\n", heap_bytes_used());
 	snprintf(security_buff, sizeof(security_buff), "%d", time_remaining);
   text_layer_set_text(count_down_text_layer, security_buff);
   time_remaining -= 1;
@@ -24,7 +23,6 @@ void arm_countdown(void *something) {
   	time_remaining = RESET_ALARM;
 
 	}
-		printf("arm countdown: %d\n", heap_bytes_used());
 
 }
 
